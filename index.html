@@ -757,7 +757,11 @@ tr:hover td{background:var(--ds2);}
 /* ═══════════════════════════════════
    DATA
 ═══════════════════════════════════ */
-window.CU=null; let calMo=new Date().getMonth(), calYr=new Date().getFullYear();
+window.CU=null;
+const _savedMo = sessionStorage.getItem('jk_calMo');
+const _savedYr = sessionStorage.getItem('jk_calYr');
+let calMo = _savedMo !== null ? parseInt(_savedMo) : new Date().getMonth();
+let calYr = _savedYr !== null ? parseInt(_savedYr) : new Date().getFullYear();
 
 const ROLES=[
   "MC / Announcer","Waseem (Hospitality)","Security","Registration","Parking",
@@ -813,7 +817,20 @@ async function loadFromDB(){
     if(rR.error) throw rR.error;
 
     vols       = (vR.data||[]).map(r=>({...r.data, id:r.id}));
-    majalisEvs = (mR.data||[]).map(r=>({...r.data, id:r.id, date:r.date, name:r.name, type:r.type, time:r.time}));
+    majalisEvs = (mR.data||[]).map(r=>{
+      const d = r.data||{};
+      return {
+        ...d,
+        id:   r.id,
+        date: r.date || d.date || '',
+        name: r.name || d.name || '',
+        type: r.type || d.type || 'Majalis',
+        time: r.time || d.time || '',
+        category: d.category || r.category || '',
+        trainee:  d.trainee  || '',
+        trainer:  d.trainer  || '',
+      };
+    });
     roster     = {};
     (rR.data||[]).forEach(r=>{ roster[r.date] = r.data; });
     // load trainings from majalis table with category='training'
@@ -854,7 +871,7 @@ async function dbSaveMajalis(mj){
   if(!sb) return;
   setSyncStatus('saving');
   try{
-    const {error} = await sb.from('majalis').upsert({id:mj.id, date:mj.date, name:mj.name, type:mj.type, time:mj.time, data:mj});
+    const {error} = await sb.from('majalis').upsert({id:mj.id, date:mj.date||'', name:mj.name||'', type:mj.type||'', time:mj.time||'', data:mj});
     if(error) throw error;
     setSyncStatus('ok');
   }catch(e){ console.error(e); setSyncStatus('error'); }
@@ -974,6 +991,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function logout(){
   window.CU = null;
   sessionStorage.removeItem('jk_session');
+  sessionStorage.removeItem('jk_calMo');
+  sessionStorage.removeItem('jk_calYr');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('lu').value = '';
@@ -1121,6 +1140,8 @@ function chMo(d){
   calMo+=d;
   if(calMo>11){calMo=0;calYr++;}
   if(calMo<0){calMo=11;calYr--;}
+  sessionStorage.setItem('jk_calMo', calMo);
+  sessionStorage.setItem('jk_calYr', calYr);
   autoRoster();
 }
 
