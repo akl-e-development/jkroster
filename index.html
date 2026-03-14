@@ -903,25 +903,28 @@ async function dbSaveMajalis(mj){
   setSyncStatus('saving');
   try{
     const payload = {
-      id:       Number(mj.id),
-      date:     mj.date     || '',
-      name:     mj.name     || '',
-      type:     mj.type     || 'Majalis',
-      time:     mj.time     || '',
-      data:     {...mj, category: mj.category||''}
+      id:   Number(mj.id),
+      date: mj.date || '',
+      name: mj.name || '',
+      type: mj.type || 'Majalis',
+      time: mj.time || '',
+      data: {
+        id:       Number(mj.id),
+        name:     mj.name     || '',
+        type:     mj.type     || 'Majalis',
+        date:     mj.date     || '',
+        time:     mj.time     || '',
+        category: '',
+        trainee:  '',
+        trainer:  '',
+      }
     };
-    console.log('Saving majalis:', payload);
-    const {data, error} = await sb.from('majalis').upsert(payload).select();
+    const {error} = await sb.from('majalis').upsert(payload, {onConflict:'id'});
     if(error) throw error;
-    // Update the local id with whatever Supabase assigned (in case of serial PK)
-    if(data && data[0] && data[0].id !== mj.id){
-      const idx = majalisEvs.findIndex(e=>e.id===mj.id);
-      if(idx>=0) majalisEvs[idx].id = data[0].id;
-    }
-    console.log('Majalis saved OK:', data);
+    console.log('Majalis saved OK:', mj.name, mj.date);
     setSyncStatus('ok');
   }catch(e){
-    console.error('dbSaveMajalis error:', e);
+    console.error('dbSaveMajalis error:', JSON.stringify(e));
     setSyncStatus('error');
     throw e;
   }
@@ -998,13 +1001,15 @@ async function dbSaveRoster(){
 // Credentials — change these to your own secure passwords
 const USERS = {
   'reshnosh.bijani':    { pw: 'AVTL',    role: 'admin', display: 'Reshnosh Bijani'    },
-  'hussain.hassnani':   { pw: 'AVATL',   role: 'admin', display: 'Hussain Hassnani'   },
+  'hussain.hasnani':    { pw: 'AVATL',   role: 'admin', display: 'Hussain Hasnani'    },
   'arhaan.prasla':      { pw: 'AVTM101', role: 'admin', display: 'Arhaan Prasla'      },
   'eshan.punjwani':     { pw: 'AVTM307', role: 'admin', display: 'Eshan Punjwani'     },
   'arshiyaan.charolia': { pw: 'AVTM238', role: 'admin', display: 'Arshiyaan Charolia' },
   'irfan.jalia':        { pw: 'IVD',     role: 'admin', display: 'Irfan Jalia'        },
   'shazad.saleem':      { pw: 'IVDD',    role: 'admin', display: 'Shazad Saleem'      },
-  'testing786':         { pw: 'bismillah1', role: 'volunteer', display: 'Test Account' },
+  'testing786':         { pw: 'bismillah1',  role: 'volunteer', display: 'Test Account'       },
+  'testingadmin786':    { pw: 'shukhran1',   role: 'admin',     display: 'Testing Admin'       },
+  'av.team':            { pw: '768110',       role: 'volunteer', display: 'AV Team'             },
 };
 
 function doLogin(){
@@ -1810,35 +1815,35 @@ const AUDIT_ICONS = {
 function auditLog(action, category, detail){
   if(!window.CU) return;
   const entry = {
-    id:        Date.now() + Math.random(),
-    ts:        new Date().toISOString(),
-    user:      CU.display,
-    username:  CU.user,
+    ts:       new Date().toISOString(),
+    user:     CU.display,
+    username: CU.user,
     action,
     category,
-    detail,
+    detail: detail || '',
   };
   auditLogs.unshift(entry);
   if(auditLogs.length > 500) auditLogs = auditLogs.slice(0, 500);
   dbSaveAuditLog(entry);
-  // Re-render if audit page is active
   if(document.getElementById('page-audit').classList.contains('active')) renderAuditLogs();
 }
 
 async function dbSaveAuditLog(entry){
   if(!sb) return;
   try{
-    await sb.from('audit_logs').insert({
-      id: entry.id,
-      ts: entry.ts,
-      username: entry.username,
+    const {error} = await sb.from('audit_logs').insert({
+      ts:           entry.ts,
+      username:     entry.username,
       user_display: entry.user,
-      action: entry.action,
-      category: entry.category,
-      detail: entry.detail,
-      data: entry
+      action:       entry.action,
+      category:     entry.category,
+      detail:       entry.detail || '',
+      data:         entry
     });
-  } catch(e){ console.warn('Audit log save failed (table may not exist):', e.message); }
+    if(error) throw error;
+  } catch(e){
+    console.error('Audit log save failed:', e.message, e);
+  }
 }
 
 async function loadAuditLogs(){
@@ -1846,12 +1851,16 @@ async function loadAuditLogs(){
   try{
     const {data, error} = await sb.from('audit_logs').select('*').order('ts', {ascending: false}).limit(500);
     if(error) throw error;
-    auditLogs = (data||[]).map(r => r.data || {
-      id: r.id, ts: r.ts, user: r.user_display, username: r.username,
-      action: r.action, category: r.category, detail: r.detail
-    });
+    auditLogs = (data||[]).map(r => ({
+      ts:       r.ts,
+      user:     r.user_display || '',
+      username: r.username     || '',
+      action:   r.action       || '',
+      category: r.category     || '',
+      detail:   r.detail       || '',
+    }));
     renderAuditLogs();
-  } catch(e){ console.warn('Could not load audit logs:', e.message); }
+  } catch(e){ console.error('Could not load audit logs:', e.message); }
 }
 
 function renderAuditLogs(){
@@ -1919,7 +1928,7 @@ function clearAuditDisplay(){
 function confirmClearAllLogs(){
   if(!confirm('Clear ALL audit logs permanently? This cannot be undone.')) return;
   auditLogs = [];
-  if(sb) sb.from('audit_logs').delete().neq('id',0).then(()=>console.log('Audit logs cleared'));
+  if(sb) sb.from('audit_logs').delete().gte('ts','1970-01-01').then(()=>console.log('Audit logs cleared'));
   renderAuditLogs();
   toast('Audit logs cleared.');
 }
