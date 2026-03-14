@@ -1218,20 +1218,30 @@ function updateStats(){
 ═══════════════════════════════════ */
 // Maps majalis name → { abbr, isK }
 const MJ_ABBR = {
-  'Chandraat':           {abbr:'C',    isK:false},
-  'Student':             {abbr:'S',    isK:false},
-  'Paanch Baar Saal':    {abbr:'PBS',  isK:false},
-  'Bait-ul Khayal':      {abbr:'BK',   isK:false},
-  'Chandraat (K)':       {abbr:'C (K)',isK:true },
-  'Student (K)':         {abbr:'S (K)',isK:true },
-  'Paanch Baar Saal (K)':{abbr:'PBS (K)',isK:true},
-  'Bait-ul Khayal (K)':  {abbr:'BK (K)',isK:true},
+  'Chandraat':              {abbr:'C',       isK:false},
+  'Student':                {abbr:'S',       isK:false},
+  'Paanch Baar Saal':       {abbr:'PBS',     isK:false},
+  'Bait-ul Khayal':         {abbr:'BK',      isK:false},
+  'Bait ul Khayal':         {abbr:'BK',      isK:false},
+  'Bait-ul-Khayal':         {abbr:'BK',      isK:false},
+  'Chandraat (K)':          {abbr:'C (K)',   isK:true },
+  'Student (K)':            {abbr:'S (K)',   isK:true },
+  'Paanch Baar Saal (K)':   {abbr:'PBS (K)', isK:true },
+  'Bait-ul Khayal (K)':     {abbr:'BK (K)', isK:true },
+  'Bait ul Khayal (K)':     {abbr:'BK (K)', isK:true },
+  'Bait-ul-Khayal (K)':     {abbr:'BK (K)', isK:true },
 };
 
 function getMjBadge(name){
-  const cfg = MJ_ABBR[name];
-  if(!cfg) return null;
-  return cfg;
+  if(!name) return null;
+  // Direct lookup first
+  if(MJ_ABBR[name]) return MJ_ABBR[name];
+  // Fuzzy match — normalise and compare
+  const n = name.trim().toLowerCase().replace(/[-–—]/g,'-').replace(/\s+/g,' ');
+  for(const [key,val] of Object.entries(MJ_ABBR)){
+    if(key.toLowerCase().replace(/[-–—]/g,'-').replace(/\s+/g,' ') === n) return val;
+  }
+  return null;
 }
 
 function renderCal(){
