@@ -1216,6 +1216,24 @@ function updateStats(){
 /* ═══════════════════════════════════
    CALENDAR RENDER — pixel-perfect
 ═══════════════════════════════════ */
+// Maps majalis name → { abbr, isK }
+const MJ_ABBR = {
+  'Chandraat':           {abbr:'C',    isK:false},
+  'Student':             {abbr:'S',    isK:false},
+  'Paanch Baar Saal':    {abbr:'PBS',  isK:false},
+  'Bait-ul Khayal':      {abbr:'BK',   isK:false},
+  'Chandraat (K)':       {abbr:'C (K)',isK:true },
+  'Student (K)':         {abbr:'S (K)',isK:true },
+  'Paanch Baar Saal (K)':{abbr:'PBS (K)',isK:true},
+  'Bait-ul Khayal (K)':  {abbr:'BK (K)',isK:true},
+};
+
+function getMjBadge(name){
+  const cfg = MJ_ABBR[name];
+  if(!cfg) return null;
+  return cfg;
+}
+
 function renderCal(){
   document.getElementById('calTitle').textContent=`${MO[calMo]} ${calYr}`;
   document.getElementById('rMonthSub').textContent=`${MO[calMo].toUpperCase()} ${calYr}`;
@@ -1261,7 +1279,19 @@ function renderCal(){
 
     // ── Corner badge ──
     if(!c.other&&tr)  h+=`<div class="corner-badge" style="background:linear-gradient(135deg,#1A2A4A,#8B5A0E);color:#E8C96A;border:1px solid rgba(180,130,60,0.5);">🎓 Training</div>`;
-    else if(!c.other&&mj) h+=`<div class="corner-badge jk-badge">${trunc(mj.name,12)}</div>`;
+    else if(!c.other&&mj){
+      const _bc = getMjBadge(mj.name);
+      if(_bc){
+        const _isK = _bc.isK;
+        const _circStyle = _isK
+          ? 'background:linear-gradient(135deg,rgba(16,185,129,0.3),rgba(6,148,104,0.4));border:1.5px solid rgba(16,185,129,0.6);box-shadow:0 0 6px rgba(16,185,129,0.25),inset 0 0 4px rgba(16,185,129,0.1);color:#6EE7B7;'
+          : 'background:linear-gradient(135deg,#0B2A5A,#1565C0);border:1.5px solid rgba(79,195,247,0.5);color:#fff;';
+        const _fs = _bc.abbr.length > 5 ? '6px' : _bc.abbr.length > 3 ? '7px' : _bc.abbr.length > 2 ? '8px' : '10px';
+        h+=`<div style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:900;font-size:${_fs};letter-spacing:-.2px;flex-shrink:0;${_circStyle}">${_bc.abbr}</div>`;
+      } else {
+        h+=`<div class="corner-badge jk-badge">${trunc(mj.name,12)}</div>`;
+      }
+    }
 
     // ── Day number ──
     h+=`<div class="dn">${String(c.d).padStart(2,'0')}</div>`;
@@ -1271,8 +1301,8 @@ function renderCal(){
       if(tr){
       // ── Training label removed ──
       }
-      // ── Majalis type label ──
-      if(mj){
+      // ── Majalis type label — hidden for known types (circle badge replaces it) ──
+      if(mj && !getMjBadge(mj.name)){
         h+=`<div style="font-family:'DM Sans',sans-serif;font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#4FC3F7;margin-bottom:4px;border-left:2px solid #4FC3F7;padding-left:5px;">${mj.type}</div>`;
       }
 
@@ -1732,24 +1762,6 @@ function autoRoster(){
 /* ═══════════════════════════════════
    MAJALIS EVENTS
 ═══════════════════════════════════ */
-// Maps majalis name → { abbr, isK }
-const MJ_ABBR = {
-  'Chandraat':           {abbr:'C',    isK:false},
-  'Student':             {abbr:'S',    isK:false},
-  'Paanch Baar Saal':    {abbr:'PBS',  isK:false},
-  'Bait-ul Khayal':      {abbr:'BK',   isK:false},
-  'Chandraat (K)':       {abbr:'C (K)',isK:true },
-  'Student (K)':         {abbr:'S (K)',isK:true },
-  'Paanch Baar Saal (K)':{abbr:'PBS (K)',isK:true},
-  'Bait-ul Khayal (K)':  {abbr:'BK (K)',isK:true},
-};
-
-function getMjBadge(name){
-  const cfg = MJ_ABBR[name];
-  if(!cfg) return null;
-  return cfg;
-}
-
 function renderMajalisCards(){
   const c=document.getElementById('majalisCards');if(!c)return;
   const s=[...majalisEvs].sort((a,b)=>a.date.localeCompare(b.date));
