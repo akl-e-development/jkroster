@@ -994,15 +994,18 @@ tr:hover td{background:var(--ds2);}
           <span>✏️</span> Edit Specific Day
         </div>
         <div class="iv-pb">
-          <div class="add-form" style="background:linear-gradient(160deg,#0D0618,#1A0A38);border:1px solid rgba(109,40,217,0.35);">
-            <div style="font-size:11px;color:#C4B5FD;margin-bottom:14px;line-height:1.6;">
-              Override the auto-roster for any specific date. Changes are saved immediately.
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-              <div>
-                <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Date</div>
-                <input type="date" id="ap-edit-date" class="wi" style="border-color:rgba(109,40,217,0.4);" onchange="apLoadDayFields()">
-              </div>
+
+          <!-- Date picker -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Date</div>
+            <input type="date" id="ap-edit-date" class="wi" style="max-width:220px;border-color:rgba(109,40,217,0.4);" onchange="apLoadDayFields()">
+            <div id="ap-edit-notes" style="font-size:11px;color:#6D4BA0;margin-top:6px;font-style:italic;min-height:16px;"></div>
+          </div>
+
+          <!-- ── ROSTER SECTION ── -->
+          <div class="add-form" style="background:linear-gradient(160deg,#0D0618,#1A0A38);border:1px solid rgba(109,40,217,0.35);margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">📅 Roster Override</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
               <div>
                 <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">JK Volunteer</div>
                 <select id="ap-edit-primary" class="ws" style="background:#0D0820;color:#E8F4FD;border:1px solid rgba(109,40,217,0.4);">
@@ -1015,19 +1018,68 @@ tr:hover td{background:var(--ds2);}
                   <option value="">— None —</option>
                 </select>
               </div>
-              <div id="ap-edit-mph-wrap">
+              <div id="ap-edit-mph-wrap" style="grid-column:1/-1;">
                 <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">MPH Volunteer <span style="color:#4A3A60;font-weight:400;">(Fridays only)</span></div>
                 <select id="ap-edit-mph" class="ws" style="background:#0D0820;color:#E8F4FD;border:1px solid rgba(109,40,217,0.4);">
                   <option value="">— Auto-assigned —</option>
                 </select>
               </div>
             </div>
-            <div id="ap-edit-notes" style="font-size:11px;color:#6D4BA0;margin-bottom:12px;font-style:italic;"></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn btn-bl" style="background:linear-gradient(135deg,#4C1D95,#6D28D9);" onclick="apSaveDay()">💾 Save Day</button>
+              <button class="btn btn-bl" style="background:linear-gradient(135deg,#4C1D95,#6D28D9);" onclick="apSaveDay()">💾 Save Roster</button>
               <button class="btn btn-ol" onclick="apClearDay()">✕ Clear Override</button>
             </div>
           </div>
+
+          <!-- ── MAJALIS SECTION ── -->
+          <div class="add-form" style="background:linear-gradient(160deg,#060F1E,#0C2040);border:1px solid rgba(79,195,247,0.25);margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#4FC3F7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">🕌 Majalis for this Day</div>
+            <div id="ap-mj-current" style="font-size:11px;color:#4A6A80;margin-bottom:10px;font-style:italic;">No majalis on this day.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end;">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#4FC3F7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Majalis Name</div>
+                <select id="ap-mj-select" class="ws" style="background:#071628;color:#E8F4FD;border:1px solid rgba(79,195,247,0.3);" onchange="handleApMjSelect()">
+                  <option value="">— Select type —</option>
+                  <option value="Chandraat">Chandraat</option>
+                  <option value="Student">Student</option>
+                  <option value="Paanch Baar Saal">Paanch Baar Saal</option>
+                  <option value="Bait-ul Khayal">Bait-ul Khayal</option>
+                  <option value="Chandraat (K)">Chandraat (K)</option>
+                  <option value="Student (K)">Student (K)</option>
+                  <option value="Paanch Baar Saal (K)">Paanch Baar Saal (K)</option>
+                  <option value="Bait-ul Khayal (K)">Bait-ul Khayal (K)</option>
+                  <option value="__custom__">✏️ Custom…</option>
+                </select>
+                <input type="text" id="ap-mj-custom" placeholder="Custom name…" class="wi" style="display:none;margin-top:5px;border-color:rgba(79,195,247,0.3);">
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#4FC3F7;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Date (auto-filled)</div>
+                <input type="text" id="ap-mj-date-display" class="wi" style="border-color:rgba(79,195,247,0.2);color:#4A6A80;" readonly placeholder="Pick a date above first">
+              </div>
+              <button onclick="apAddMajalis()" style="height:38px;padding:0 14px;background:linear-gradient(135deg,#0B3A6B,#1565C0);color:#fff;border:none;border-radius:var(--r);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">+ Add</button>
+            </div>
+          </div>
+
+          <!-- ── TRAINING SECTION ── -->
+          <div class="add-form" style="background:linear-gradient(160deg,#0E100A,#1C1505);border:1px solid rgba(200,150,40,0.25);">
+            <div style="font-size:10px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">🎓 Training for this Day</div>
+            <div id="ap-tr-current" style="font-size:11px;color:#4A6A80;margin-bottom:10px;font-style:italic;">No training on this day.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end;">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee</div>
+                <input type="text" id="ap-tr-trainee" placeholder="Trainee name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer</div>
+                <input type="text" id="ap-tr-trainer" placeholder="Trainer name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+              </div>
+              <button onclick="apAddTraining()" style="height:38px;padding:0 14px;background:linear-gradient(135deg,#92400E,#B45309);color:#FCD34D;border:none;border-radius:var(--r);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">+ Add</button>
+            </div>
+            <div id="ap-tr-delete-wrap" style="margin-top:8px;display:none;">
+              <button onclick="apRemoveTraining()" style="background:rgba(192,57,43,.12);color:#f88;border:1px solid rgba(192,57,43,.3);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer;">🗑 Remove Training from this Day</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -2510,16 +2562,123 @@ function apLoadDayFields(){
   mphSel.innerHTML = '<option value="">— Auto-assigned —</option>' +
     active.filter(v=>v.mph).map(v=>`<option value="${v.name}" ${ro._mph_primary===v.name?'selected':''}>${v.name}</option>`).join('');
 
-  // Show current assignment info
+  // Notes summary
   const notes = document.getElementById('ap-edit-notes');
   const mj = majalisEvs.find(e=>e.date===ds);
   const tr = trainings.find(e=>e.date===ds);
   let info = [];
-  if(mj) info.push(`🕌 Majalis: ${mj.name}`);
-  if(tr) info.push(`🎓 Training: ${tr.trainee} with ${tr.trainer}`);
-  if(ro._auto) info.push('Currently auto-assigned');
-  else if(ro._primary) info.push('Currently manually assigned');
+  if(ro._auto) info.push('Auto-assigned');
+  else if(ro._primary) info.push('Manually assigned');
   notes.textContent = info.join(' · ');
+
+  // Auto-fill date display in majalis section
+  const mjDateDisplay = document.getElementById('ap-mj-date-display');
+  if(mjDateDisplay) mjDateDisplay.value = fd(ds);
+
+  // Majalis current state
+  const mjCurrent = document.getElementById('ap-mj-current');
+  if(mjCurrent){
+    if(mj){
+      mjCurrent.innerHTML = `<span style="color:#90CAF9;font-weight:600;">${esc(mj.name)}</span> &nbsp;<button onclick="apRemoveMajalis('${mj.id}')" style="background:rgba(192,57,43,.12);color:#f88;border:1px solid rgba(192,57,43,.3);border-radius:4px;padding:1px 7px;font-size:10px;cursor:pointer;">✕ Remove</button>`;
+    } else {
+      mjCurrent.innerHTML = '<span style="color:#4A6A80;font-style:italic;">No majalis on this day.</span>';
+    }
+  }
+  // Pre-fill majalis select if one exists
+  const mjSel = document.getElementById('ap-mj-select');
+  if(mjSel && mj){
+    if(Object.keys(MJ_ABBR).includes(mj.name)) mjSel.value = mj.name;
+    else { mjSel.value='__custom__'; handleApMjSelect(); document.getElementById('ap-mj-custom').value=mj.name; }
+  } else if(mjSel){ mjSel.value=''; document.getElementById('ap-mj-custom').style.display='none'; }
+
+  // Training current state
+  const trCurrent = document.getElementById('ap-tr-current');
+  const trDeleteWrap = document.getElementById('ap-tr-delete-wrap');
+  if(trCurrent){
+    if(tr){
+      trCurrent.innerHTML = `<span style="color:#FCD34D;font-weight:600;">🎓 ${esc(tr.trainee)}</span> <span style="color:#4A6A80;">with</span> <span style="color:#FCD34D;font-weight:600;">${esc(tr.trainer)}</span>`;
+      if(trDeleteWrap) trDeleteWrap.style.display='block';
+      document.getElementById('ap-tr-trainee').value = tr.trainee||'';
+      document.getElementById('ap-tr-trainer').value = tr.trainer||'';
+    } else {
+      trCurrent.innerHTML = '<span style="color:#4A6A80;font-style:italic;">No training on this day.</span>';
+      if(trDeleteWrap) trDeleteWrap.style.display='none';
+      document.getElementById('ap-tr-trainee').value='';
+      document.getElementById('ap-tr-trainer').value='';
+    }
+  }
+}
+
+function handleApMjSelect(){
+  const sel = document.getElementById('ap-mj-select');
+  const custom = document.getElementById('ap-mj-custom');
+  if(sel.value==='__custom__'){ custom.style.display='block'; custom.focus(); }
+  else custom.style.display='none';
+}
+
+function apAddMajalis(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds){ toast('Pick a date first','err'); return; }
+  const sel = document.getElementById('ap-mj-select');
+  const custom = document.getElementById('ap-mj-custom');
+  const name = sel.value==='__custom__' ? custom.value.trim() : sel.value;
+  if(!name || sel.value===''){ toast('Select or enter a Majalis name','err'); return; }
+
+  // Remove existing majalis on this day first
+  const existing = majalisEvs.find(e=>e.date===ds);
+  if(existing){ majalisEvs=majalisEvs.filter(e=>e.id!==existing.id); dbDeleteMajalis(existing.id); }
+
+  const newMj = {id:Date.now(), name, type:'Majalis', date:ds, time:'', category:''};
+  majalisEvs.push(newMj);
+  dbSaveMajalis(newMj);
+  auditLog(`Admin added Majalis: ${name}`, 'majalis', `Date: ${ds} via Admin Panel`);
+  renderMajalisCards(); renderUpcoming(); updateStats(); autoRoster();
+  apLoadDayFields();
+  toast(`Majalis "${name}" added to ${fd(ds)}`);
+}
+
+function apRemoveMajalis(id){
+  const mj = majalisEvs.find(e=>e.id==id);
+  majalisEvs = majalisEvs.filter(e=>e.id!=id);
+  dbDeleteMajalis(id);
+  auditLog(`Admin removed Majalis: ${mj?mj.name:id}`, 'majalis', `Date: ${mj?mj.date:''} via Admin Panel`);
+  renderMajalisCards(); renderUpcoming(); updateStats(); autoRoster();
+  apLoadDayFields();
+  toast('Majalis removed.');
+}
+
+function apAddTraining(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds){ toast('Pick a date first','err'); return; }
+  const trainee = document.getElementById('ap-tr-trainee').value.trim();
+  const trainer = document.getElementById('ap-tr-trainer').value.trim();
+  if(!trainee){ toast('Enter a trainee name','err'); return; }
+  if(!trainer){ toast('Enter a trainer name','err'); return; }
+
+  // Remove existing training on this day first
+  const existing = trainings.find(e=>e.date===ds);
+  if(existing){ trainings=trainings.filter(e=>e.id!==existing.id); dbDeleteTraining(existing.id); }
+
+  const newTr = {id:Date.now(), name:trainee, type:'Training', trainee, trainer, date:ds, time:'', category:'training'};
+  trainings.push(newTr);
+  dbSaveTraining(newTr);
+  auditLog(`Admin added Training: ${trainee} with ${trainer}`, 'training', `Date: ${ds} via Admin Panel`);
+  renderTrainingCards(); autoRoster();
+  apLoadDayFields();
+  toast(`Training added to ${fd(ds)}`);
+}
+
+function apRemoveTraining(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds) return;
+  const tr = trainings.find(e=>e.date===ds);
+  if(!tr){ toast('No training on this day','err'); return; }
+  trainings = trainings.filter(e=>e.id!==tr.id);
+  dbDeleteTraining(tr.id);
+  auditLog(`Admin removed Training: ${tr.trainee}`, 'training', `Date: ${ds} via Admin Panel`);
+  renderTrainingCards(); autoRoster();
+  apLoadDayFields();
+  toast('Training removed.');
 }
 
 function apSaveDay(){
@@ -2606,8 +2765,3 @@ function nav(el){
 </script>
 </body>
 </html>
-
-
-
-
-
