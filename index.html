@@ -67,6 +67,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
 .main{margin-left:230px;padding:26px 28px;min-height:100vh;}
 .page{display:none;}
 .page.active{display:block;animation:fadeIn .25s ease;}
+.page.ep-only{display:none!important;}
+.page.ep-only.ep-visible{display:block!important;animation:fadeIn .25s ease;}
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
 .ph h1{font-family:'Barlow',sans-serif;font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;}
 .ph p{color:var(--dm);font-size:11px;margin-top:2px;}
@@ -1371,9 +1373,14 @@ function applySession(){
   if(CU.role !== 'admin') document.querySelectorAll('.ao').forEach(e => e.style.display = 'none');
   // Admin panel only for eshan.punjwani
   document.querySelectorAll('.ep-only').forEach(e => {
-    // nav-items use flex, pages use block
     const isNavItem = e.classList.contains('nav-item');
-    e.style.display = (CU.user === 'eshan.punjwani') ? (isNavItem ? 'flex' : 'block') : 'none';
+    if(CU.user === 'eshan.punjwani'){
+      if(isNavItem) e.style.display = 'flex';
+      // Pages stay hidden until explicitly navigated to — don't auto-show
+    } else {
+      e.style.display = 'none';
+      e.classList.remove('ep-visible');
+    }
   });
 }
 
@@ -1408,7 +1415,7 @@ function logout(){
   document.getElementById('lu').value = '';
   document.getElementById('lp').value = '';
   document.getElementById('loginErr').textContent = '';
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('active'); p.classList.remove('ep-visible'); });
   const dash=document.getElementById('page-dashboard');
   if(dash) dash.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -2790,9 +2797,15 @@ function renderApUserList(){
 // Nav defined below — handles all page switching
 function nav(el){
   if(!el) return;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  // Block admin panel access for non-eshan users
+  if(el.dataset.page==='adminpanel' && (!window.CU || CU.user!=='eshan.punjwani')) return;
+  document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('active'); p.classList.remove('ep-visible'); });
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const _pg=document.getElementById('page-'+el.dataset.page); if(_pg) _pg.classList.add('active'); else return;
+  const _pg=document.getElementById('page-'+el.dataset.page);
+  if(!_pg) return;
+  _pg.classList.add('active');
+  // ep-only pages need ep-visible to override the CSS lock
+  if(_pg.classList.contains('ep-only')) _pg.classList.add('ep-visible');
   el.classList.add('active');
   if(el.dataset.page === 'audit') renderAuditLogs();
   if(el.dataset.page === 'adminpanel' && window.CU && CU.user === 'eshan.punjwani'){
