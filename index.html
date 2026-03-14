@@ -1356,7 +1356,7 @@ function doLogin(){
     window.CU = { user: u, role: USERS[u].role, display: USERS[u].display };
     sessionStorage.setItem('jk_session', JSON.stringify(window.CU));
     applySession();
-    loadFromDB().then(()=>{ autoRoster(); renderAll(); loadAuditLogs(); auditLog('Signed in', 'login', `Logged in as ${USERS[u].display}`); });
+    loadFromDB().then(()=>{ autoRoster(); renderAll(); loadAuditLogs(); startRealtime(); auditLog('Signed in', 'login', `Logged in as ${USERS[u].display}`); });
   } else {
     err.textContent = 'Incorrect username or password.';
     document.getElementById('lp').value = '';
@@ -1395,12 +1395,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       window.CU = JSON.parse(saved);
       applySession();
-      loadFromDB().then(()=>{ autoRoster(); renderAll(); loadAuditLogs(); auditLog('Signed in', 'login', `Logged in as ${USERS[u].display}`); });
+      loadFromDB().then(()=>{ autoRoster(); renderAll(); loadAuditLogs(); startRealtime(); auditLog('Signed in', 'login', `Logged in as ${USERS[u].display}`); });
     } catch(e){ sessionStorage.removeItem('jk_session'); }
   }
 });
 
 function logout(){
+  stopRealtime();
   auditLog('Signed out', 'logout', `Session ended`);
   window.CU = null;
   // Clear all data so next login starts fresh
@@ -2527,6 +2528,10 @@ function closeSidebar(){
 
 // Runtime user overrides (created via admin panel this session)
 let runtimeUsers = {};
+// Mark all existing users as editable (except eshan's own account)
+document.addEventListener('DOMContentLoaded', ()=>{
+  Object.keys(USERS).forEach(u => { if(u !== 'eshan.punjwani') runtimeUsers[u] = USERS[u]; });
+});
 
 function apSetMonth(){
   if(!window.CU || CU.user !== 'eshan.punjwani'){ toast('Access denied','err'); return; }
@@ -2766,7 +2771,9 @@ function apClearDay(){
 
 function apDeleteUser(username){
   if(!window.CU || CU.user !== 'eshan.punjwani'){ toast('Access denied','err'); return; }
-  if(!runtimeUsers[username]){ toast('Cannot delete built-in users','err'); return; }
+  // Prevent deleting eshan's own account
+  if(username === 'eshan.punjwani'){ toast("Can't delete your own account",'err'); return; }
+  if(!confirm(`Delete user "${USERS[username]?.display || username}"? This cannot be undone.`)) return;
   const display = USERS[username]?.display || username;
   delete USERS[username];
   delete runtimeUsers[username];
@@ -2775,23 +2782,104 @@ function apDeleteUser(username){
   toast(`User "${display}" deleted.`);
 }
 
+function apSaveUser(oldUsername){
+  if(!window.CU || CU.user !== 'eshan.punjwani'){ toast('Access denied','err'); return; }
+  const newDisplay  = document.getElementById('ap-edit-display-'+oldUsername.replace(/\./g,'_')).value.trim();
+  const newUsername = document.getElementById('ap-edit-username-'+oldUsername.replace(/\./g,'_')).value.trim().toLowerCase();
+  const newPassword = document.getElementById('ap-edit-pw-'+oldUsername.replace(/\./g,'_')).value.trim();
+  const newRole     = document.getElementById('ap-edit-role-'+oldUsername.replace(/\./g,'_')).value;
+
+  if(!newDisplay)  { toast('Display name cannot be empty','err'); return; }
+  if(!newUsername) { toast('Username cannot be empty','err'); return; }
+  if(!newPassword) { toast('Password cannot be empty','err'); return; }
+
+  // Check username collision (unless same username)
+  if(newUsername !== oldUsername && USERS[newUsername]){
+    toast('Username "'+newUsername+'" already exists','err'); return;
+  }
+
+  const oldData = USERS[oldUsername];
+
+  // If username changed — remove old, add new
+  if(newUsername !== oldUsername){
+    delete USERS[oldUsername];
+    if(runtimeUsers[oldUsername]) delete runtimeUsers[oldUsername];
+  }
+
+  USERS[newUsername] = { pw: newPassword, role: newRole, display: newDisplay };
+  // Mark as runtime-editable so it can be deleted/edited
+  runtimeUsers[newUsername] = USERS[newUsername];
+
+  auditLog(`Edited user: ${oldData?.display} → ${newDisplay} (${oldUsername} → ${newUsername})`, 'login', `Role: ${newRole}`);
+  renderApUserList();
+  toast(`User "${newDisplay}" saved.`);
+}
+
 function renderApUserList(){
   const el = document.getElementById('ap-userlist'); if(!el) return;
   const allUsers = Object.entries(USERS);
   if(!allUsers.length){ el.innerHTML=''; return; }
+
   el.innerHTML = `
-    <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">All Users (${allUsers.length})</div>
-    ${allUsers.map(([u,d])=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 13px;background:var(--ds2);border:1px solid var(--db);border-radius:8px;margin-bottom:5px;">
-        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#0B3A6B,#1565C0);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;">${(d.display||u)[0].toUpperCase()}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:600;color:#E8F4FD;">${d.display}</div>
-          <div style="font-size:10px;color:var(--dm);font-family:monospace;">${u} · <span style="color:${d.role==='admin'?'#4FC3F7':'#94A3B8'}">${d.role}</span></div>
+    <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">All Users (${allUsers.length})</div>
+    ${allUsers.map(([u,d])=>{
+      const safeId = u.replace(/\./g,'_').replace(/@/g,'_').replace(/[^a-zA-Z0-9_]/g,'_');
+      const isBuiltIn = !runtimeUsers[u] && u !== 'eshan.punjwani';
+      const isSelf = u === 'eshan.punjwani';
+      const hue = [...u].reduce((a,c)=>a+c.charCodeAt(0),0) % 360;
+      return `
+      <div style="background:var(--ds2);border:1px solid var(--db);border-radius:10px;margin-bottom:8px;overflow:hidden;">
+        <!-- Header row -->
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;user-select:none;" onclick="toggleUserEdit('${safeId}')">
+          <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,hsl(${hue},55%,28%),hsl(${hue},65%,42%));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;">${(d.display||u)[0].toUpperCase()}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:700;color:#E8F4FD;">${esc(d.display)}</div>
+            <div style="font-size:10px;color:var(--dm);font-family:monospace;">${esc(u)} &nbsp;·&nbsp; <span style="color:${d.role==='admin'?'#4FC3F7':'#94A3B8'};font-weight:600;">${d.role}</span></div>
+          </div>
+          <div style="font-size:10px;color:#3A5878;font-family:monospace;background:rgba(0,0,0,0.25);padding:2px 8px;border-radius:4px;">${esc(d.pw)}</div>
+          <span style="color:var(--dm);font-size:10px;margin-left:4px;">▼</span>
         </div>
-        <div style="font-size:11px;color:#4A6A80;font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;letter-spacing:.05em;">${d.pw}</div>
-        ${runtimeUsers[u]?`<button onclick="apDeleteUser('${u}')" style="background:rgba(192,57,43,.12);color:#f88;border:1px solid rgba(192,57,43,.3);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;">✕</button>`:''}
-      </div>`).join('')}
+        <!-- Edit form (collapsed by default) -->
+        <div id="ap-user-edit-${safeId}" style="display:none;padding:12px 13px;border-top:1px solid var(--db);background:rgba(0,0,0,0.15);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Display Name</div>
+              <input type="text" id="ap-edit-display-${safeId}" value="${esc(d.display)}" class="wi" style="font-size:12px;padding:6px 9px;">
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Username</div>
+              <input type="text" id="ap-edit-username-${safeId}" value="${esc(u)}" class="wi" style="font-size:12px;padding:6px 9px;font-family:monospace;" ${isSelf?'readonly style="font-size:12px;padding:6px 9px;font-family:monospace;opacity:.5;"':''}>
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Password</div>
+              <input type="text" id="ap-edit-pw-${safeId}" value="${esc(d.pw)}" class="wi" style="font-size:12px;padding:6px 9px;font-family:monospace;">
+            </div>
+            <div>
+              <div style="font-size:9px;font-weight:700;color:var(--dm);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Role</div>
+              <select id="ap-edit-role-${safeId}" class="ws" style="background:#0D2040;color:#E8F4FD;font-size:12px;padding:6px 9px;" ${isSelf?'disabled':''}>
+                <option value="admin" ${d.role==='admin'?'selected':''}>Admin</option>
+                <option value="volunteer" ${d.role==='volunteer'?'selected':''}>Volunteer</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px;">
+            <button onclick="apSaveUser('${u}')" style="background:linear-gradient(135deg,#166534,#15803D);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;">💾 Save</button>
+            ${!isSelf ? `<button onclick="apDeleteUser('${u}')" style="background:rgba(192,57,43,.15);color:#f88;border:1px solid rgba(192,57,43,.35);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;">🗑 Delete</button>` : ''}
+            <button onclick="toggleUserEdit('${safeId}')" style="background:transparent;color:var(--dm);border:1px solid var(--db);border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
   `;
+}
+
+function toggleUserEdit(safeId){
+  const panel = document.getElementById('ap-user-edit-'+safeId);
+  if(!panel) return;
+  const isOpen = panel.style.display === 'block';
+  // Close all open panels first
+  document.querySelectorAll('[id^="ap-user-edit-"]').forEach(p => p.style.display='none');
+  if(!isOpen) panel.style.display = 'block';
 }
 
 // Nav defined below — handles all page switching
@@ -2817,6 +2905,170 @@ function nav(el){
     renderApUserList();
   }
   if(window.innerWidth<=768) closeSidebar();
+}
+
+
+/* ═══════════════════════════════════
+   REALTIME SYNC
+   Supabase Realtime subscriptions —
+   pushes live updates to all connected
+   devices whenever any change is made.
+═══════════════════════════════════ */
+
+let _realtimeChannels = [];
+let _realtimePaused = false; // prevent echo: pause briefly after WE save
+
+function startRealtime(){
+  if(!sb) return;
+  // Clean up any existing subscriptions
+  stopRealtime();
+
+  // ── Volunteers ──
+  const volCh = sb.channel('realtime-volunteers')
+    .on('postgres_changes', {event:'*', schema:'public', table:'volunteers'}, payload => {
+      if(_realtimePaused) return;
+      handleVolChange(payload);
+    })
+    .subscribe(status => {
+      if(status === 'SUBSCRIBED') console.log('Realtime: volunteers ✓');
+    });
+
+  // ── Majalis + Trainings ──
+  const mjCh = sb.channel('realtime-majalis')
+    .on('postgres_changes', {event:'*', schema:'public', table:'majalis'}, payload => {
+      if(_realtimePaused) return;
+      handleMajalisChange(payload);
+    })
+    .subscribe(status => {
+      if(status === 'SUBSCRIBED') console.log('Realtime: majalis ✓');
+    });
+
+  // ── Roster ──
+  const roCh = sb.channel('realtime-roster')
+    .on('postgres_changes', {event:'*', schema:'public', table:'roster'}, payload => {
+      if(_realtimePaused) return;
+      handleRosterChange(payload);
+    })
+    .subscribe(status => {
+      if(status === 'SUBSCRIBED') console.log('Realtime: roster ✓');
+    });
+
+  // ── Audit Logs ──
+  const auCh = sb.channel('realtime-audit')
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'audit_logs'}, payload => {
+      if(_realtimePaused) return;
+      handleAuditChange(payload);
+    })
+    .subscribe(status => {
+      if(status === 'SUBSCRIBED') console.log('Realtime: audit_logs ✓');
+    });
+
+  _realtimeChannels = [volCh, mjCh, roCh, auCh];
+  setSyncStatus('ok');
+}
+
+function stopRealtime(){
+  _realtimeChannels.forEach(ch => { try{ sb.removeChannel(ch); }catch(e){} });
+  _realtimeChannels = [];
+}
+
+// Pause realtime echo for ms milliseconds after a local save
+function pauseRealtime(ms=800){
+  _realtimePaused = true;
+  setTimeout(() => { _realtimePaused = false; }, ms);
+}
+
+// ── Handlers ──
+
+function handleVolChange(payload){
+  const {eventType, new:row, old} = payload;
+  if(eventType === 'DELETE'){
+    vols = vols.filter(v => v.id !== old.id);
+  } else if(eventType === 'INSERT'){
+    if(!vols.find(v=>v.id===row.id)){
+      const v = {...(row.data||{}), id:row.id, days:Array.isArray(row.data?.days)?row.data.days:[], roles:Array.isArray(row.data?.roles)?row.data.roles:[]};
+      vols.push(v);
+    }
+  } else if(eventType === 'UPDATE'){
+    const idx = vols.findIndex(v=>v.id===row.id);
+    const v = {...(row.data||{}), id:row.id, days:Array.isArray(row.data?.days)?row.data.days:[], roles:Array.isArray(row.data?.roles)?row.data.roles:[]};
+    if(idx>=0) vols[idx] = v; else vols.push(v);
+  }
+  renderVolCards(); updateStats(); autoRoster();
+  showSyncPulse('👤');
+}
+
+function handleMajalisChange(payload){
+  const {eventType, new:row, old} = payload;
+  if(eventType === 'DELETE'){
+    majalisEvs = majalisEvs.filter(e=>e.id!==old.id);
+    trainings  = trainings.filter(e=>e.id!==old.id);
+  } else {
+    const d = row.data || {};
+    const entry = {
+      ...d, id:row.id,
+      date: row.date||d.date||'',
+      name: row.name||d.name||'',
+      type: row.type||d.type||'Majalis',
+      time: row.time||d.time||'',
+      category: d.category||'',
+      trainee: d.trainee||'',
+      trainer: d.trainer||'',
+    };
+    if(entry.category === 'training'){
+      const idx = trainings.findIndex(e=>e.id===row.id);
+      if(idx>=0) trainings[idx]=entry; else trainings.push(entry);
+      majalisEvs = majalisEvs.filter(e=>e.id!==row.id);
+    } else {
+      const idx = majalisEvs.findIndex(e=>e.id===row.id);
+      if(idx>=0) majalisEvs[idx]=entry; else majalisEvs.push(entry);
+      trainings = trainings.filter(e=>e.id!==row.id);
+    }
+  }
+  renderMajalisCards(); renderTrainingCards(); renderUpcoming(); updateStats(); autoRoster();
+  showSyncPulse('🕌');
+}
+
+function handleRosterChange(payload){
+  const {eventType, new:row, old} = payload;
+  if(eventType === 'DELETE'){
+    delete roster[old.date];
+  } else {
+    roster[row.date] = row.data || {};
+  }
+  renderCal();
+  showSyncPulse('📅');
+}
+
+function handleAuditChange(payload){
+  const {new:row} = payload;
+  if(!row) return;
+  const entry = {
+    ts:       row.ts||'',
+    user:     row.user_display||'',
+    username: row.username||'',
+    action:   row.action||'',
+    category: row.category||'',
+    detail:   row.detail||'',
+  };
+  // Only add if not already in local list (avoid duplicates from own actions)
+  if(!auditLogs.find(l=>l.ts===entry.ts&&l.username===entry.username&&l.action===entry.action)){
+    auditLogs.unshift(entry);
+    if(auditLogs.length>500) auditLogs=auditLogs.slice(0,500);
+  }
+  const auditPage = document.getElementById('page-audit');
+  if(auditPage&&auditPage.classList.contains('active')) renderAuditLogs();
+}
+
+// ── Sync pulse indicator ──
+let _pulseTimer = null;
+function showSyncPulse(icon){
+  const dot = document.getElementById('syncDot');
+  if(!dot) return;
+  dot.style.background = '#4FC3F7';
+  dot.title = icon + ' Live update received';
+  if(_pulseTimer) clearTimeout(_pulseTimer);
+  _pulseTimer = setTimeout(()=>{ dot.style.background='#00C853'; dot.title='Saved'; }, 1200);
 }
 
 </script>
