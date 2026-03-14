@@ -648,8 +648,6 @@ tr:hover td{background:var(--ds2);}
     <button class="lbtn" onclick="doLogin()">Sign In</button>
     <div id="loginErr" style="color:#f88;font-size:12px;text-align:center;margin-top:10px;min-height:16px;"></div>
     <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--db);font-size:11px;color:var(--dm);text-align:center;line-height:1.7;">
-      Admin: <span style="color:var(--blue-lt);font-weight:600;">admin</span> &nbsp;·&nbsp;
-      Volunteer: <span style="color:var(--blue-lt);font-weight:600;">volunteer</span><br>
       <span style="opacity:.6;">Contact your administrator for credentials.</span>
     </div>
   </div>
@@ -673,7 +671,7 @@ tr:hover td{background:var(--ds2);}
       <div class="nav-item ao" data-page="volunteers" onclick="nav(this)"><span class="ni">👥</span> User Management</div>
       <div class="nav-item ao" data-page="events" onclick="nav(this)"><span class="ni">🕌</span> Add-ons</div>
       <div class="nav-item ao" data-page="audit" onclick="nav(this)"><span class="ni">🔍</span> Audit Logs</div>
-      <div class="nav-item ep-only" data-page="adminpanel" onclick="nav(this)"><span class="ni">⚙️</span> Admin Panel</div>
+      <div class="nav-item ep-only" data-page="adminpanel" onclick="nav(this)" style="display:none;"><span class="ni">⚙️</span> Admin Panel</div>
     </nav>
     <div class="sb-bot">
       <div class="uchip">
@@ -882,7 +880,6 @@ tr:hover td{background:var(--ds2);}
         <div><h1>Audit Logs</h1><p>Track all changes made by users</p></div>
         <div class="ha">
           <button class="btn btn-ol btn-sm" onclick="clearAuditDisplay()">Clear View</button>
-          <button class="btn btn-da btn-sm" id="clearLogsBtn" onclick="confirmClearAllLogs()" style="display:none;">🗑 Clear All Logs</button>
         </div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
@@ -907,7 +904,7 @@ tr:hover td{background:var(--ds2);}
 
 
     <!-- ADMIN PANEL — eshan.punjwani only -->
-    <div class="page ep-only" id="page-adminpanel">
+    <div class="page ep-only" id="page-adminpanel" style="display:none;">
       <div class="ph">
         <div><h1>⚙️ Admin Panel</h1><p>System administration — restricted access</p></div>
       </div>
@@ -977,7 +974,7 @@ tr:hover td{background:var(--ds2);}
       </div>
 
       <!-- Clear Audit Logs -->
-      <div class="iv-panel">
+      <div class="iv-panel" style="margin-bottom:20px;">
         <div class="iv-ph" style="background:linear-gradient(135deg,#7F1D1D,#B91C1C);">
           <span>🛡️</span> Audit Logs
         </div>
@@ -987,6 +984,49 @@ tr:hover td{background:var(--ds2);}
               ⚠️ This will permanently delete all audit log entries from the database. This action cannot be undone.
             </div>
             <button class="btn btn-da" onclick="confirmClearAllLogs()" style="font-size:13px;padding:9px 20px;">🗑 Clear All Audit Logs</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Specific Day -->
+      <div class="iv-panel" style="margin-bottom:20px;">
+        <div class="iv-ph" style="background:linear-gradient(135deg,#3B1A6B,#6D28D9);">
+          <span>✏️</span> Edit Specific Day
+        </div>
+        <div class="iv-pb">
+          <div class="add-form" style="background:linear-gradient(160deg,#0D0618,#1A0A38);border:1px solid rgba(109,40,217,0.35);">
+            <div style="font-size:11px;color:#C4B5FD;margin-bottom:14px;line-height:1.6;">
+              Override the auto-roster for any specific date. Changes are saved immediately.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Date</div>
+                <input type="date" id="ap-edit-date" class="wi" style="border-color:rgba(109,40,217,0.4);" onchange="apLoadDayFields()">
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">JK Volunteer</div>
+                <select id="ap-edit-primary" class="ws" style="background:#0D0820;color:#E8F4FD;border:1px solid rgba(109,40,217,0.4);">
+                  <option value="">— Auto-assigned —</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Supervisor (SUP tag)</div>
+                <select id="ap-edit-sup" class="ws" style="background:#0D0820;color:#E8F4FD;border:1px solid rgba(109,40,217,0.4);">
+                  <option value="">— None —</option>
+                </select>
+              </div>
+              <div id="ap-edit-mph-wrap">
+                <div style="font-size:9px;font-weight:700;color:#A78BFA;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">MPH Volunteer <span style="color:#4A3A60;font-weight:400;">(Fridays only)</span></div>
+                <select id="ap-edit-mph" class="ws" style="background:#0D0820;color:#E8F4FD;border:1px solid rgba(109,40,217,0.4);">
+                  <option value="">— Auto-assigned —</option>
+                </select>
+              </div>
+            </div>
+            <div id="ap-edit-notes" style="font-size:11px;color:#6D4BA0;margin-bottom:12px;font-style:italic;"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-bl" style="background:linear-gradient(135deg,#4C1D95,#6D28D9);" onclick="apSaveDay()">💾 Save Day</button>
+              <button class="btn btn-ol" onclick="apClearDay()">✕ Clear Override</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1189,10 +1229,16 @@ async function dbSaveRosterDay(date, data){
   if(!sb) return;
   setSyncStatus('saving');
   try{
-    const {error} = await sb.from('roster').upsert({date, data});
-    if(error) throw error;
+    if(data === null){
+      // Delete the row entirely
+      const {error} = await sb.from('roster').delete().eq('date', date);
+      if(error) throw error;
+    } else {
+      const {error} = await sb.from('roster').upsert({date, data});
+      if(error) throw error;
+    }
     setSyncStatus('ok');
-  }catch(e){ console.error(e); setSyncStatus('error'); }
+  }catch(e){ console.error('dbSaveRosterDay error:',e); setSyncStatus('error'); }
 }
 
 async function dbSaveRoster(){
@@ -1252,7 +1298,11 @@ function applySession(){
   document.getElementById('uav').textContent  = CU.display[0].toUpperCase();
   if(CU.role !== 'admin') document.querySelectorAll('.ao').forEach(e => e.style.display = 'none');
   // Admin panel only for eshan.punjwani
-  document.querySelectorAll('.ep-only').forEach(e => e.style.display = (CU.user === 'eshan.punjwani') ? 'flex' : 'none');
+  document.querySelectorAll('.ep-only').forEach(e => {
+    // nav-items use flex, pages use block
+    const isNavItem = e.classList.contains('nav-item');
+    e.style.display = (CU.user === 'eshan.punjwani') ? (isNavItem ? 'flex' : 'block') : 'none';
+  });
 }
 
 // Restore session on refresh
@@ -1274,7 +1324,11 @@ document.addEventListener('DOMContentLoaded', () => {
 function logout(){
   auditLog('Signed out', 'logout', `Session ended`);
   window.CU = null;
+  // Clear all data so next login starts fresh
+  vols=[]; majalisEvs=[]; trainings=[]; roster={}; auditLogs=[];
   sessionStorage.removeItem('jk_session');
+  // Reset calendar to current month
+  calMo=new Date().getMonth(); calYr=new Date().getFullYear();
   sessionStorage.removeItem('jk_calMo');
   sessionStorage.removeItem('jk_calYr');
   document.getElementById('loginScreen').style.display = 'flex';
@@ -1644,7 +1698,7 @@ function renderVolCards(){
       <div class="vc-hdr" onclick="tVol(${v.id})">
         <div class="vc-av">👤</div>
         <div style="flex:1;min-width:0;">
-          <div class="vc-nm">${v.name}</div>
+          <div class="vc-nm">${esc(v.name)}</div>
           <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;">
             ${roles.map(r=>{const cfg=ROLE_CFG.find(x=>x.key===r)||{cls:'tm',short:r};return `<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;" class="role-pill ${cfg.cls}" onclick="event.stopPropagation()">${cfg.short}</span>`;}).join('')}
           </div>
@@ -1664,7 +1718,7 @@ function renderVolCards(){
             ${(v.bds||'').split(',').filter(d=>d.trim()).map(d=>`
               <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.25);border-radius:5px;padding:2px 8px;font-size:11px;color:#f88;">
                 ${fd(d.trim())}
-                <span onclick="removeBusyDate(${v.id},'${d.trim()}')" style="cursor:pointer;font-size:13px;opacity:.7;line-height:1;">×</span>
+                <span onclick="removeBusyDate(${v.id}, '${d.trim()}')" style="cursor:pointer;font-size:13px;opacity:.7;line-height:1;">×</span>
               </span>`).join('')}
           </div>
         </div>
@@ -1781,10 +1835,11 @@ function autoRoster(){
   for(let d=1;d<=dim;d++){
     const ds=`${calYr}-${String(calMo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     if(roster[ds]&&roster[ds]._auto){
-      // Only clear auto fields, keep manual
+      // Only clear auto fields, keep manual overrides
       delete roster[ds]._primary;
       delete roster[ds]._sup;
       delete roster[ds]._auto;
+      delete roster[ds]._mph_primary;
       if(!Object.keys(roster[ds]).length) delete roster[ds];
     }
   }
@@ -1803,8 +1858,6 @@ function autoRoster(){
   for(let d=1;d<=dim;d++){
     const ds=`${calYr}-${String(calMo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dow=new Date(ds+'T12:00').getDay();
-    // no busy dates in simplified version
-
     // Skip if this slot has a manual assignment already
     if(roster[ds]&&!roster[ds]._auto&&roster[ds]._primary) continue;
 
@@ -1891,7 +1944,7 @@ function renderMajalisCards(){
     return `<div class="mj-list-card" style="${badge?.isK?'border-color:rgba(16,185,129,0.3);background:linear-gradient(135deg,rgba(6,78,59,0.15),rgba(4,20,14,0.3));':''}">
       ${circleContent}
       <div class="mj-list-body">
-        <div class="mj-list-name" style="${badge?.isK?'color:#6EE7B7;':''}">${e.name}</div>
+        <div class="mj-list-name" style="${badge?.isK?'color:#6EE7B7;':''}">${esc(e.name)}</div>
         <div class="mj-list-meta">
           <span style="font-size:10px;color:var(--dm);">${fd(e.date)} · ${dow}</span>
         </div>
@@ -1916,9 +1969,9 @@ function handleMjSelect(){
 function addMajalis(){
   const sel=document.getElementById('mjNameSelect');
   const customInput=document.getElementById('mjName');
-  const name=(sel.value==='__custom__'||sel.value==='')?customInput.value.trim():sel.value;
+  const name=(sel.value==='__custom__')?customInput.value.trim():sel.value;
   const date=document.getElementById('mjDate').value;
-  if(!name){toast('Select or enter a Majalis name','err');return;}
+  if(!name||sel.value===''){toast('Select or enter a Majalis name','err');return;}
   if(!date){toast('Select a date','err');return;}
   const newMj={id:Date.now(),name,type:'Majalis',date,time:'',category:''};
   majalisEvs.push(newMj);
@@ -1935,7 +1988,7 @@ function addMajalis(){
     const d = new Date(date + 'T12:00');
     d.setDate(d.getDate() + 8);
     const pbsDate = d.toISOString().split('T')[0];
-    const pbsMj = {id:Date.now()+1, name:'Paanch Baar Saal', type:'Majalis', date:pbsDate, time:'', category:''};
+    const pbsMj = {id:Date.now()+Math.floor(Math.random()*9000)+1000, name:'Paanch Baar Saal', type:'Majalis', date:pbsDate, time:'', category:''};
     majalisEvs.push(pbsMj);
     renderMajalisCards();renderUpcoming();updateStats();autoRoster();
     auditLog('Auto-added Majalis: Paanch Baar Saal', 'majalis', `Date: ${pbsDate} (8 days after ${name})`);
@@ -2015,7 +2068,8 @@ function delTraining(id){
 ═══════════════════════════════════ */
 function renderUpcoming(){
   const tb=document.getElementById('upTb');if(!tb)return;
-  const all=[...majalisEvs].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+  const today=new Date().toISOString().split('T')[0];
+  const all=[...majalisEvs].filter(e=>e.date>=today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
   if(!all.length){tb.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--dm);padding:16px;font-size:11px;">No Majalis dates scheduled yet.</td></tr>`;return;}
   tb.innerHTML=all.map(e=>{
     const ro=roster[e.date];
@@ -2231,10 +2285,6 @@ function renderAuditLogs(){
   const count = document.getElementById('auditCount');
   if(!list) return; // Page not in DOM yet — safe to skip
 
-  // Show purge button only for eshan.punjwani
-  const clearBtn = document.getElementById('clearLogsBtn');
-  if(clearBtn) clearBtn.style.display = (window.CU && CU.user==='eshan.punjwani') ? 'inline-flex' : 'none';
-
   const search = (document.getElementById('auditSearch')?.value||'').toLowerCase();
   const filter = document.getElementById('auditFilter')?.value||'';
 
@@ -2355,11 +2405,17 @@ document.getElementById('mo').addEventListener('click', function(e){ if(e.target
 let _toastTimer=null;
 function toast(msg, type='ok'){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast '+(type==='err'?'err':'ok');
+  t.textContent=msg||''; t.className='toast '+(type==='err'?'err':'ok');
   void t.offsetWidth;
   t.classList.add('show');
   if(_toastTimer) clearTimeout(_toastTimer);
   _toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+
+function esc(s){
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 function fd(ds){
@@ -2371,14 +2427,16 @@ function fd(ds){
 
 /* ── MOBILE SIDEBAR ── */
 function toggleSidebar(){
-  const sb=document.querySelector('.sidebar');
+  const sideEl=document.querySelector('.sidebar');
   const ov=document.getElementById('sideOverlay');
-  sb.classList.toggle('open');
+  sideEl.classList.toggle('open');
   ov.classList.toggle('show');
 }
 function closeSidebar(){
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sideOverlay').classList.remove('show');
+  const sideEl=document.querySelector('.sidebar');
+  if(sideEl) sideEl.classList.remove('open');
+  const ov=document.getElementById('sideOverlay');
+  if(ov) ov.classList.remove('show');
 }
 // Mobile sidebar close handled in nav()
 
@@ -2426,6 +2484,76 @@ function apCreateUser(){
   toast(`User "${display}" created!`);
 }
 
+function apLoadDayFields(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds) return;
+
+  const isFri = new Date(ds+'T12:00').getDay() === 5;
+  const ro = roster[ds] || {};
+  const active = vols.filter(v=>v.status==='active');
+
+  // Populate JK dropdown
+  const jkSel = document.getElementById('ap-edit-primary');
+  jkSel.innerHTML = '<option value="">— Auto-assigned —</option>' +
+    active.map(v=>`<option value="${v.name}" ${ro._primary===v.name?'selected':''}>${v.name}</option>`).join('');
+
+  // Populate SUP dropdown
+  const supSel = document.getElementById('ap-edit-sup');
+  supSel.innerHTML = '<option value="">— None —</option>' +
+    active.filter(v=>v.roles&&v.roles.includes('Supervisor')).map(v=>`<option value="${v.name}" ${ro._sup===v.name?'selected':''}>${v.name}</option>`).join('');
+
+  // MPH dropdown — only relevant on Fridays
+  const mphWrap = document.getElementById('ap-edit-mph-wrap');
+  mphWrap.style.opacity = isFri ? '1' : '0.3';
+  const mphSel = document.getElementById('ap-edit-mph');
+  mphSel.disabled = !isFri;
+  mphSel.innerHTML = '<option value="">— Auto-assigned —</option>' +
+    active.filter(v=>v.mph).map(v=>`<option value="${v.name}" ${ro._mph_primary===v.name?'selected':''}>${v.name}</option>`).join('');
+
+  // Show current assignment info
+  const notes = document.getElementById('ap-edit-notes');
+  const mj = majalisEvs.find(e=>e.date===ds);
+  const tr = trainings.find(e=>e.date===ds);
+  let info = [];
+  if(mj) info.push(`🕌 Majalis: ${mj.name}`);
+  if(tr) info.push(`🎓 Training: ${tr.trainee} with ${tr.trainer}`);
+  if(ro._auto) info.push('Currently auto-assigned');
+  else if(ro._primary) info.push('Currently manually assigned');
+  notes.textContent = info.join(' · ');
+}
+
+function apSaveDay(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds){ toast('Pick a date first','err'); return; }
+  const primary = document.getElementById('ap-edit-primary').value;
+  const sup     = document.getElementById('ap-edit-sup').value;
+  const mph     = document.getElementById('ap-edit-mph').value;
+
+  roster[ds] = roster[ds] || {};
+  // Mark as manual (not auto) so autoRoster won't overwrite
+  delete roster[ds]._auto;
+  if(primary) roster[ds]._primary = primary; else delete roster[ds]._primary;
+  if(sup)     roster[ds]._sup     = sup;     else roster[ds]._sup = '';
+  if(mph)     roster[ds]._mph_primary = mph; else delete roster[ds]._mph_primary;
+
+  dbSaveRosterDay(ds, roster[ds]);
+  auditLog(`Manual override: ${ds}`, 'roster',
+    `JK: ${primary||'auto'} · SUP: ${sup||'none'} · MPH: ${mph||'auto'}`);
+  renderCal();
+  toast(`Day ${ds} saved!`);
+}
+
+function apClearDay(){
+  const ds = document.getElementById('ap-edit-date').value;
+  if(!ds){ toast('Pick a date first','err'); return; }
+  delete roster[ds];
+  dbSaveRosterDay(ds, null);
+  auditLog(`Cleared override for ${ds}`, 'roster', 'Reverted to auto-roster');
+  autoRoster();
+  toast(`Override cleared — ${ds} is back to auto.`);
+  apLoadDayFields();
+}
+
 function apDeleteUser(username){
   if(!window.CU || CU.user !== 'eshan.punjwani'){ toast('Access denied','err'); return; }
   if(!runtimeUsers[username]){ toast('Cannot delete built-in users','err'); return; }
@@ -2456,8 +2584,7 @@ function renderApUserList(){
   `;
 }
 
-// Init admin panel fields on nav
-const _origNav = nav;
+// Nav defined below — handles all page switching
 function nav(el){
   if(!el) return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2465,10 +2592,12 @@ function nav(el){
   document.getElementById('page-'+el.dataset.page).classList.add('active');
   el.classList.add('active');
   if(el.dataset.page === 'audit') renderAuditLogs();
-  if(el.dataset.page === 'adminpanel'){
-    // Pre-fill current month
+  if(el.dataset.page === 'adminpanel' && window.CU && CU.user === 'eshan.punjwani'){
     document.getElementById('ap-month').value = calMo;
     document.getElementById('ap-year').value  = calYr;
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('ap-edit-date').value = todayStr;
+    apLoadDayFields();
     renderApUserList();
   }
   if(window.innerWidth<=768) closeSidebar();
@@ -2477,7 +2606,6 @@ function nav(el){
 </script>
 </body>
 </html>
-
 
 
 
