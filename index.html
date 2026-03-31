@@ -3381,70 +3381,7 @@ function apSaveDay(){
   apSaveDayWithPrefix('ap-');
 }
 
-function apSaveDay(){
-  const ds = document.getElementById('ap-edit-date').value;
-  if(!ds){ toast('Select a date first','err'); return; }
 
-  const primary = document.getElementById('ap-edit-primary').value;
-  const sup     = document.getElementById('ap-edit-sup').value;
-  const mph     = document.getElementById('ap-edit-mph').value;
-
-  if(!primary){ toast('Select a JK volunteer','err'); return; }
-
-  // Build override entry — _manual flag is sacred: autoRoster NEVER touches it
-  const entry = {
-    _primary: primary,
-    _sup:     sup || '',
-    _manual:  true,
-    _auto:    false,   // explicitly not auto
-  };
-  // Handle MPH dropdown — three states
-  const mphDropVal = document.getElementById('ap-edit-mph').value;
-  if(mphDropVal === '__cancel__'){
-    // User explicitly wants to cancel MPH
-    entry._mph_removed = true;
-    entry._mph_manual = true;
-  } else if(mphDropVal && mphDropVal !== ''){
-    // User selected a volunteer
-    entry._mph_primary = mphDropVal;
-    entry._mph_manual = true;
-    delete entry._mph_removed;
-  } else {
-    // No selection — preserve any existing mph state
-    if(roster[ds]){
-      if(roster[ds]._mph_primary) entry._mph_primary = roster[ds]._mph_primary;
-      if(roster[ds]._mph_removed) entry._mph_removed = roster[ds]._mph_removed;
-      if(roster[ds]._mph_manual) entry._mph_manual = roster[ds]._mph_manual;
-    }
-  }
-
-  // Set in memory
-  roster[ds] = entry;
-
-  // Navigate calendar to the date's month
-  const dateObj = new Date(ds+'T12:00');
-  calMo = dateObj.getMonth();
-  calYr = dateObj.getFullYear();
-  sessionStorage.setItem('jk_calMo', calMo);
-  sessionStorage.setItem('jk_calYr', calYr);
-
-  // Render calendar — manual slot will show correctly
-  // Run autoRoster so OTHER days in this month get properly filled
-  // Manual day is protected by _manual flag
-  autoRoster();
-
-  // Save to DB (pause realtime to prevent echo overwriting our manual entry)
-  pauseRealtime(5000);
-  dbSaveRosterDay(ds, entry);
-
-  auditLog(
-    'Manual override: '+ds, 'roster',
-    'JK: '+primary+(sup?' · SUP: '+sup:'')+(mphDropVal==='__cancel__'?' · MPH: CANCELLED':mphDropVal?' · MPH: '+mphDropVal:'')
-  );
-
-  apLoadDayFields();
-  toast('\u2713 Override saved — '+primary+' on '+fd(ds));
-}
 
 
 function apClearDay(){
