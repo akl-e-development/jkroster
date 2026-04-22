@@ -705,9 +705,11 @@ tr:hover td{background:var(--ds2);}
       <div class="ph">
         <div><h1>Dashboard</h1><p>Overview for this month</p></div>
         <div class="ha">
+          <button class="btn btn-ol btn-sm" onclick="showDebugInfo()" style="margin-right:8px;">🔍 DB Status</button>
           <button class="btn btn-bl btn-sm" onclick="nav(document.querySelector('[data-page=calendar]'))">View Roster →</button>
         </div>
       </div>
+      <div id="debug-panel" style="display:none;margin:0 24px 16px;background:#0A1A2E;border:1px solid rgba(79,195,247,0.2);border-radius:8px;padding:14px 16px;font-family:'DM Sans',sans-serif;font-size:12px;color:#90CAF9;"></div>
       <div class="sg">
         <div class="sc"><div class="sc-l">Active Volunteers</div><div class="sc-v" id="sV">0</div><div class="sc-s">Registered members</div></div>
         <div class="sc"><div class="sc-l">Majalis This Month</div><div class="sc-v" id="sJK">0</div><div class="sc-s">Scheduled events</div></div>
@@ -1277,21 +1279,33 @@ function setSyncStatus(state){
 
 /* ── LOAD all data from Supabase on login ── */
 async function loadFromDB(){
-  if(!sb){ setSyncStatus('off'); return; }
+  if(!sb){ setSyncStatus('off'); toast('No database connection — check Supabase config','err'); return; }
   setSyncStatus('saving');
   try{
     // Load app users and global settings
     await loadUsersFromDB();
     await loadMonthSetting();
 
+    console.log('loadFromDB: fetching volunteers...');
     const vR = await sb.from('volunteers').select('*');
-    if(vR.error) throw vR.error;
-    const mR = await sb.from('majalis').select('*').order('date');
-    if(mR.error) throw mR.error;
-    const rR = await sb.from('roster').select('*');
-    if(rR.error) throw rR.error;
+    if(vR.error){ console.error('volunteers error:', vR.error); throw vR.error; }
+    console.log('loadFromDB: volunteers raw rows:', vR.data?.length, vR.data?.[0]);
 
-    vols       = (vR.data||[]).map(r=>({...r.data, id:r.id, days:Array.isArray(r.data&&r.data.days)?r.data.days:[], roles:Array.isArray(r.data&&r.data.roles)?r.data.roles:[]}));
+    console.log('loadFromDB: fetching majalis...');
+    const mR = await sb.from('majalis').select('*').order('date');
+    if(mR.error){ console.error('majalis error:', mR.error); throw mR.error; }
+    console.log('loadFromDB: majalis raw rows:', mR.data?.length, mR.data?.[0]);
+
+    console.log('loadFromDB: fetching roster...');
+    const rR = await sb.from('roster').select('*');
+    if(rR.error){ console.error('roster error:', rR.error); throw rR.error; }
+    console.log('loadFromDB: roster raw rows:', rR.data?.length, rR.data?.[0]);
+
+    vols = (vR.data||[]).map(r=>{
+      const d = r.data || r; // handle both {id, data:{...}} and flat row
+      return {...d, id:r.id||d.id, days:Array.isArray(d.days)?d.days:[], roles:Array.isArray(d.roles)?d.roles:[]};
+    });
+
     majalisEvs = (mR.data||[]).map(r=>{
       const d = r.data||{};
       return {
@@ -1306,29 +1320,30 @@ async function loadFromDB(){
         trainer:  d.trainer  || '',
       };
     });
-    roster     = {};
+
+    roster = {};
     (rR.data||[]).forEach(r=>{
       const loaded = r.data || {};
-      // Preserve _manual flag — manually overridden slots must never be auto-overwritten
       if(!loaded._manual && !loaded._auto && loaded._primary){
-        loaded._manual = true; // treat legacy manual entries as manual
+        loaded._manual = true;
       }
       roster[r.date] = loaded;
-      if(false && !roster[r.date]._auto && roster[r.date]._primary){
-        roster[r.date]._manual = true;
-      }
     });
-    // load trainings from majalis table with category='training'
+
+    // Split trainings from majalis
     trainings  = majalisEvs.filter(e=>e.category==='training');
     majalisEvs = majalisEvs.filter(e=>e.category!=='training');
 
-    console.log(`Loaded: ${vols.length} volunteers, ${majalisEvs.length} majalis, ${trainings.length} trainings, ${Object.keys(roster).length} roster days`);
+    console.log(`✓ Loaded: ${vols.length} volunteers, ${majalisEvs.length} majalis, ${trainings.length} trainings, ${Object.keys(roster).length} roster days`);
     setSyncStatus('ok');
     toast(`✓ Synced — ${vols.length} volunteers, ${majalisEvs.length} majalis, ${Object.keys(roster).length} roster entries`);
+    // Update debug info if panel is open
+    const dbg = document.getElementById('debug-panel');
+    if(dbg) showDebugInfo();
   } catch(e){
     console.error('DB load error:', e);
     setSyncStatus('error');
-    toast('Sync error: ' + (e.message||e), 'err');
+    toast('⚠ Sync failed: ' + (e.message||JSON.stringify(e)), 'err');
   }
 }
 
@@ -1707,6 +1722,33 @@ function updateStats(){
   document.getElementById('sJK').textContent=majalisEvs.filter(e=>{const d=new Date(e.date+'T12:00');return d.getMonth()===mo&&d.getFullYear()===yr;}).length;
   document.getElementById('sMPH').textContent=majalisEvs.length;
   document.getElementById('sBusy').textContent=vols.filter(v=>v.status==='active').length;
+}
+
+function showDebugInfo(){
+  const dbg = document.getElementById('debug-panel');
+  if(!dbg) return;
+  dbg.style.display = dbg.style.display === 'none' ? 'block' : 'none';
+  if(dbg.style.display === 'none') return;
+
+  const rosterKeys = Object.keys(roster);
+  const manualCount = rosterKeys.filter(k => roster[k]._manual).length;
+  const autoCount = rosterKeys.filter(k => roster[k]._auto).length;
+
+  dbg.innerHTML = `
+    <div style="font-weight:700;font-size:13px;color:#4FC3F7;margin-bottom:8px;">🔍 Database Status</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;">
+      <div>Supabase connected: <b style="color:${sb?'#4CAF50':'#f44'};">${sb?'YES':'NO'}</b></div>
+      <div>Volunteers loaded: <b style="color:#FFF;">${vols.length}</b></div>
+      <div>Majalis loaded: <b style="color:#FFF;">${majalisEvs.length}</b></div>
+      <div>Trainings loaded: <b style="color:#FFF;">${trainings.length}</b></div>
+      <div>Roster entries: <b style="color:#FFF;">${rosterKeys.length}</b> (${manualCount} manual, ${autoCount} auto)</div>
+      <div>Active volunteers: <b style="color:#FFF;">${vols.filter(v=>v.status==='active').length}</b></div>
+    </div>
+    ${vols.length === 0 ? '<div style="color:#f88;margin-top:8px;font-weight:700;">⚠ No volunteers loaded — DB may be empty or connection failed. Check browser console (F12) for errors.</div>' : ''}
+    ${vols.length > 0 ? '<div style="color:#4CAF50;margin-top:8px;">✓ Data loaded successfully. If calendar looks empty, check which month is selected.</div>' : ''}
+    <div style="margin-top:8px;"><button onclick="loadFromDB().then(()=>{autoRoster();renderAll();})" style="background:#1565C0;color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:11px;cursor:pointer;">↻ Reload from DB</button>
+    <button onclick="document.getElementById('debug-panel').style.display='none'" style="background:transparent;color:#888;border:1px solid #444;border-radius:4px;padding:4px 12px;font-size:11px;cursor:pointer;margin-left:8px;">Close</button></div>
+  `;
 }
 
 /* ═══════════════════════════════════
