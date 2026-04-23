@@ -192,6 +192,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
   overflow:hidden;
 }
 .cell:last-child,.cell:nth-child(7n){border-right:none;}
+.cell:nth-child(7n):not(.ev-jk):not(.ev-training):not(.today){background:#060F1E;}
 .cell:hover{background:#091828;}
 .cell.other{background:#060F1E;pointer-events:all;cursor:pointer;}
 .cell.other .cell-inner{opacity:1;}
@@ -200,17 +201,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
 
 /* Majalis — subtle ruby tint */
 .cell.ev-jk{
-  background:linear-gradient(160deg,#070E1C 0%,#180910 55%,#200A12 100%);
-  border-color:rgba(185,28,60,0.3)!important;
+  background:linear-gradient(160deg,#050B15 0%,#120608 45%,#1E080F 100%);
+  border-color:rgba(185,28,60,0.45)!important;
+  box-shadow:inset 0 0 24px rgba(140,10,30,0.18);
 }
 /* Training — subtle amber tint */
 .cell.ev-training{
-  background:linear-gradient(160deg,#070E1C 0%,#130F07 55%,#1A1205 100%);
-  border-color:rgba(180,130,40,0.28)!important;
+  background:linear-gradient(160deg,#060F1E 0%,#0D1008 40%,#1C1505 70%,#261A04 100%);
+  border-color:rgba(200,140,30,0.4)!important;
+  box-shadow:inset 0 0 20px rgba(160,100,10,0.12);
 }
 .cell.today{
-  box-shadow:inset 0 0 0 2px rgba(79,195,247,0.5);
-  background:linear-gradient(155deg,#071C40 0%,#092450 100%);
+  /* No highlight for today */
 }
 
 /* ── CIRCLE BADGE (top-right corner) ── */
@@ -223,14 +225,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
   font-size:10px;
 }
 .cell-badge.badge-jk{
-  background:linear-gradient(135deg,#0D2A5A,#1565C0);
-  border:1px solid rgba(79,195,247,0.45);
-  color:#E8F4FD;
+  background:linear-gradient(135deg,#0A1E44,#1258AA);
+  border:1.5px solid rgba(79,195,247,0.55);
+  color:#FFFFFF;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  text-shadow:0 1px 3px rgba(0,0,0,0.4);
 }
 .cell-badge.badge-k{
-  background:linear-gradient(135deg,rgba(6,78,59,0.7),rgba(16,120,80,0.7));
-  border:1px solid rgba(16,185,129,0.5);
-  color:#6EE7B7;
+  background:linear-gradient(135deg,rgba(4,60,45,0.85),rgba(10,100,60,0.85));
+  border:1.5px solid rgba(16,185,129,0.6);
+  color:#A7F3D0;
+  text-transform:uppercase;
+  letter-spacing:.05em;
 }
 .cell-badge.badge-tr{
   background:linear-gradient(135deg,#4A2000,#8B4500);
@@ -241,11 +248,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
 
 /* ── DAY NUMBER ── */
 .dn{
-  font-family:'Barlow',sans-serif;font-size:18px;font-weight:900;
-  color:#3E6A88;line-height:1;margin-bottom:5px;letter-spacing:-.5px;
+  font-family:'Barlow',sans-serif;font-size:19px;font-weight:900;
+  color:#4A7A98;line-height:1;margin-bottom:6px;letter-spacing:-.5px;
 }
 .cell:hover .dn{color:#5A90B8;}
-.cell.today .dn{color:#4FC3F7;}
+
 
 .cell.ev-jk .dn{color:#A05565;}
 .cell.ev-training .dn{color:#8A7030;}
@@ -264,11 +271,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
 .duty-lbl.mph-lbl{color:#7C3AED;border-left-color:#5B21B6;}
 .duty-name{
   font-family:'DM Sans',sans-serif;
-  font-size:12px;font-weight:700;
-  color:#E4F2FC;line-height:1.25;
+  font-size:13px;font-weight:700;
+  color:#FFFFFF;line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   max-width:100%;
   display:block;
+  text-shadow:0 1px 4px rgba(0,0,0,0.35);
 }
 .chk{color:#4FC3F7;font-size:9px;flex-shrink:0;margin-left:2px;}
 .duty-unassigned{
@@ -1920,7 +1928,7 @@ function renderCal(){
     if(c.pad)   cls+=' other';
     else if(tr) cls+=' ev-training';
     else if(mj) cls+=' ev-jk';
-    if(isToday) cls+=' today';
+    /* today class removed — no highlight needed */
     div.className=cls;
     div.onclick=()=>openDayModal(ds,c.d);
 
@@ -1945,7 +1953,7 @@ function renderCal(){
     if(tr){
       h+=`<div class="duty" style="margin-top:2px;">
         <div class="duty-lbl" style="color:#C8900A;border-left-color:#8B6010;padding-right:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">JAM&#256;TKHANA</div>
-        <div class="duty-name" style="color:#FCD34D;font-size:13px;font-weight:800;font-family:'Barlow',sans-serif;">${esc(tr.trainer)}</div>
+        <div class="duty-name" style="color:#FFFFFF;font-size:13px;font-weight:700;">${esc(tr.trainer)}</div>
         <div style="font-size:9px;color:#A07830;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
           🎓 Trainee: <span style="color:#D97706;font-weight:600;">${esc(tr.trainee)}</span>
         </div>
@@ -2603,302 +2611,159 @@ async function downloadRosterPNG(){
   const orig = btn.innerHTML;
   btn.innerHTML = '⏳ Capturing…';
   btn.disabled = true;
-
   const portal = document.getElementById('role-portal');
   if(portal) portal.remove();
 
   try {
     const monthTitle = document.getElementById('calTitle').textContent;
-
-    // ── Off-screen container ──
-    const container = document.createElement('div');
-    container.style.cssText = `
-      position:fixed;left:-9999px;top:0;
-      width:1680px;
-      background:linear-gradient(160deg,#ffffff 0%,#e8f4ff 40%,#d0e8ff 100%);
-      font-family:'DM Sans',sans-serif;
-      padding:0;margin:0;
-    `;
-
-    // ── Month title — full redesign ──
-    const titleEl = document.createElement('div');
-    titleEl.style.cssText = `
-      position:relative;
-      background:linear-gradient(135deg,#0A2A6E 0%,#1055B8 45%,#1976D2 75%,#42A5F5 100%);
-      text-align:center;
-      padding:34px 40px 30px;
-      overflow:hidden;
-    `;
-
-    // Decorative circles behind title
-    const deco1 = document.createElement('div');
-    deco1.style.cssText = `position:absolute;width:320px;height:320px;border-radius:50%;
-      background:rgba(255,255,255,0.05);top:-100px;left:-60px;`;
-    const deco2 = document.createElement('div');
-    deco2.style.cssText = `position:absolute;width:220px;height:220px;border-radius:50%;
-      background:rgba(255,255,255,0.06);bottom:-80px;right:80px;`;
-    const deco3 = document.createElement('div');
-    deco3.style.cssText = `position:absolute;width:140px;height:140px;border-radius:50%;
-      background:rgba(255,255,255,0.04);top:10px;right:200px;`;
-    titleEl.appendChild(deco1);
-    titleEl.appendChild(deco2);
-    titleEl.appendChild(deco3);
-
-    // Subtitle
-    const subEl = document.createElement('div');
-    subEl.style.cssText = `
-      font-family:'DM Sans',sans-serif;
-      font-size:13px;font-weight:600;
-      text-transform:uppercase;letter-spacing:.3em;
-      color:rgba(200,228,255,0.7);
-      margin-bottom:10px;
-      position:relative;z-index:1;
-    `;
-    subEl.textContent = 'Auckland Jamatkhana · AV Volunteer Roster';
-    titleEl.appendChild(subEl);
-
-    // Month + Year — split styling
     const [monthPart, yearPart] = monthTitle.split(' ');
-    const titleInner = document.createElement('div');
-    titleInner.style.cssText = `position:relative;z-index:1;line-height:1;`;
-    titleInner.innerHTML = `
-      <span style="font-family:'Barlow',sans-serif;font-size:62px;font-weight:900;
-        text-transform:uppercase;letter-spacing:.08em;color:#FFFFFF;
-        text-shadow:0 2px 20px rgba(0,0,0,0.25);">${monthPart}</span>
-      <span style="font-family:'Barlow',sans-serif;font-size:62px;font-weight:300;
-        text-transform:uppercase;letter-spacing:.08em;color:rgba(200,228,255,0.75);
-        margin-left:18px;">${yearPart}</span>
-    `;
-    titleEl.appendChild(titleInner);
 
-    // Thin bottom accent line
-    const accentLine = document.createElement('div');
-    accentLine.style.cssText = `
-      position:absolute;bottom:0;left:0;right:0;height:3px;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent);
-    `;
-    titleEl.appendChild(accentLine);
+    // ── Container ──
+    const container = document.createElement('div');
+    container.style.cssText = `position:fixed;left:-9999px;top:0;width:1820px;background:linear-gradient(160deg,#f8fbff 0%,#eaf3ff 50%,#dceeff 100%);font-family:'DM Sans',sans-serif;padding:0;margin:0;`;
+
+    // ── Title bar ──
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = `position:relative;background:linear-gradient(135deg,#071E5A 0%,#0D3A9E 40%,#1565C0 70%,#1E88E5 100%);text-align:center;padding:32px 40px 28px;overflow:hidden;`;
+    [
+      {w:'380px',h:'380px',top:'-120px',left:'-70px',op:'0.06'},
+      {w:'260px',h:'260px',top:'auto',bot:'-90px',right:'60px',op:'0.07'},
+      {w:'180px',h:'180px',top:'5px',right:'220px',op:'0.05'},
+    ].forEach(d=>{
+      const c=document.createElement('div');
+      c.style.cssText=`position:absolute;width:${d.w};height:${d.h};border-radius:50%;background:rgba(255,255,255,${d.op});top:${d.top||'auto'};left:${d.left||'auto'};right:${d.right||'auto'};${d.bot?'bottom:'+d.bot:''}`;
+      titleEl.appendChild(c);
+    });
+    const subEl=document.createElement('div');
+    subEl.style.cssText=`font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.35em;color:rgba(180,215,255,0.7);margin-bottom:12px;position:relative;z-index:1;`;
+    subEl.textContent='Auckland Jamatkhana · AV Volunteer Roster';
+    titleEl.appendChild(subEl);
+    const titleInner=document.createElement('div');
+    titleInner.style.cssText=`position:relative;z-index:1;line-height:1;display:flex;align-items:baseline;justify-content:center;gap:18px;`;
+    titleInner.innerHTML=`<span style="font-family:'Barlow',sans-serif;font-size:70px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:#FFFFFF;text-shadow:0 3px 24px rgba(0,0,0,0.3);">${monthPart}</span><span style="font-family:'Barlow',sans-serif;font-size:70px;font-weight:300;text-transform:uppercase;letter-spacing:.06em;color:rgba(180,215,255,0.7);">${yearPart}</span>`;
+    titleEl.appendChild(titleInner);
+    const accent=document.createElement('div');
+    accent.style.cssText=`position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent);`;
+    titleEl.appendChild(accent);
     container.appendChild(titleEl);
 
-    // ── Grid wrapper ──
-    const gridWrap = document.createElement('div');
-    gridWrap.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);width:100%;';
-
-    // ── Column headers — reworked ──
-    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-    days.forEach((d,i) => {
-      const hdr = document.createElement('div');
-      const isFriday = i === 5;
-      hdr.style.cssText = `
-        background:${isFriday
-          ? 'linear-gradient(180deg,#1055B8,#0D47A1)'
-          : 'linear-gradient(180deg,#1565C0,#1258AA)'};
-        padding:14px 8px 13px;
-        text-align:center;
-        font-family:'DM Sans',sans-serif;
-        font-size:12px;font-weight:800;
-        text-transform:uppercase;letter-spacing:.18em;
-        color:${isFriday ? '#90CAFF' : 'rgba(220,238,255,0.85)'};
-        border-right:${i<6 ? '1px solid rgba(255,255,255,0.1)' : 'none'};
-        border-bottom:3px solid ${isFriday ? 'rgba(100,180,255,0.6)' : 'rgba(255,255,255,0.15)'};
-        box-sizing:border-box;
-      `;
-      hdr.textContent = d;
+    // ── Day headers ──
+    const gridWrap=document.createElement('div');
+    gridWrap.style.cssText='display:grid;grid-template-columns:repeat(7,1fr);width:100%;';
+    const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    days.forEach((d,i)=>{
+      const hdr=document.createElement('div');
+      const isFri=d==='Friday';
+      hdr.style.cssText=`background:linear-gradient(180deg,#1258B0,#0E4A9A);padding:13px 8px 12px;text-align:center;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.2em;color:${isFri?'#90CAFF':'rgba(210,230,255,0.85)'};border-right:${i<6?'1px solid rgba(255,255,255,0.08)':'none'};border-bottom:${isFri?'3px solid rgba(100,180,255,0.7)':'2px solid rgba(255,255,255,0.12)'};box-sizing:border-box;`;
+      hdr.textContent=d;
       gridWrap.appendChild(hdr);
     });
 
     // ── Cells ──
-    const CELL_HEIGHT = '185px';
-    const CELL_PAD = '13px 15px 15px';
-    const liveCells = document.querySelectorAll('#calBody > div');
+    const CELL_H='195px';
+    const CELL_P='13px 14px 14px';
+    const PRESET_ABBRS = ['C','S','PBS','BK','C(K)','S(K)','PBS(K)','BK(K)'];
 
-    liveCells.forEach((cell, idx) => {
-      const clone = cell.cloneNode(true);
-      const isOther = cell.classList.contains('other');
-      const isMajalis = cell.classList.contains('ev-jk');
-      const isTraining = cell.classList.contains('ev-training');
-      const isToday = cell.classList.contains('today');
+    document.querySelectorAll('#calBody > div').forEach(cell=>{
+      const isMajalis=cell.classList.contains('ev-jk');
+      const isTraining=cell.classList.contains('ev-training');
+      const isOther=cell.classList.contains('other');
+      const isToday=cell.classList.contains('today');
 
-      // ── Cell background — other cells get same style, slightly muted ──
-      let cellBg = '#FFFFFF';
-      let cellBorder = 'rgba(21,101,192,0.18)';
-      if(isMajalis){ cellBg='#FFF5F7'; cellBorder='rgba(185,28,100,0.3)'; }
-      else if(isTraining){ cellBg='#FFFBF0'; cellBorder='rgba(180,130,40,0.3)'; }
-      else if(isOther){ cellBg='#FFFFFF'; cellBorder='rgba(21,101,192,0.18)'; }
+      const clone=cell.cloneNode(true);
 
-      clone.style.cssText = `
-        background:${cellBg};
-        border-right:1px solid ${cellBorder};
-        border-bottom:1px solid ${cellBorder};
-        padding:${CELL_PAD};
-        min-height:${CELL_HEIGHT};
-        position:relative;
-        box-sizing:border-box;
-        overflow:hidden;
-        opacity:1;
-        ${isToday?'box-shadow:inset 0 0 0 3px rgba(21,101,192,0.7);background:#EEF6FF !important;':''}
-      `;
+      // ── Cell background — ALL same white, majalis/training tinted ──
+      let bg='#FFFFFF', bdr='rgba(21,101,192,0.15)';
+      if(isMajalis){bg='linear-gradient(160deg,#FFFFFF 0%,#FFF0F2 40%,#FFCCD4 100%)';bdr='rgba(185,28,60,0.45)';}
+      else if(isTraining){bg='linear-gradient(160deg,#FFFFFF 0%,#FFF8E8 40%,#FFE8A0 100%)';bdr='rgba(200,140,30,0.4)';}
+      clone.style.cssText=`background:${bg};border-right:1px solid ${bdr};border-bottom:1px solid ${bdr};padding:${CELL_P};min-height:${CELL_H};position:relative;box-sizing:border-box;overflow:visible;opacity:1;`;
 
-      // Remove the opacity from cell-inner that comes from .cell.other CSS
-      clone.querySelectorAll('.cell-inner').forEach(el => {
-        el.style.opacity = '1';
-      });
+      // Reset cell-inner opacity
+      clone.querySelectorAll('.cell-inner').forEach(el=>el.style.opacity='1');
 
       // ── Day number ──
-      clone.querySelectorAll('.dn').forEach(el => {
-        let dnCol = '#1E5A8A';
-        if(isToday) dnCol = '#1565C0';
-        else if(isMajalis) dnCol = '#9B2040';
-        else if(isTraining) dnCol = '#7A5800';
-        el.style.cssText = `
-          font-family:'Barlow',sans-serif;
-          font-size:28px;font-weight:900;
-          color:${dnCol};
-          line-height:1;margin-bottom:8px;
-          letter-spacing:-.5px;display:block;
-        `;
+      clone.querySelectorAll('.dn').forEach(el=>{
+        const col = isMajalis?'#8B1A30' : isTraining?'#6A4A00' : isOther?'#90AECB' : '#1E5A8A';
+        el.style.cssText=`font-family:'Barlow',sans-serif;font-size:30px;font-weight:900;color:${col};line-height:1;margin-bottom:6px;letter-spacing:-.5px;display:block;`;
       });
 
-      // ── Cell badge circle (majalis type) — large & centered ──
-      clone.querySelectorAll('.cell-badge').forEach(el => {
-        // Determine abbreviation length from text content to size font correctly
-        const abbr = el.textContent.trim();
-        const aLen = abbr.length;
-        const fs = aLen >= 6 ? '13px' : aLen >= 4 ? '15px' : aLen >= 3 ? '16px' : '20px';
-        el.style.width = '62px';
-        el.style.height = '62px';
-        el.style.minWidth = '62px';
-        el.style.minHeight = '62px';
-        el.style.fontSize = fs;
-        el.style.top = '10px';
-        el.style.right = '10px';
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.style.justifyContent = 'center';
-        el.style.textAlign = 'center';
-        el.style.lineHeight = '1';
-        el.style.fontWeight = '900';
-        el.style.letterSpacing = '-.5px';
-        el.style.borderRadius = '50%';
-        el.style.position = 'absolute';
-        el.style.fontFamily = "'Barlow',sans-serif";
-        el.style.boxSizing = 'border-box';
+      // ── Badge (preset = circle, custom = pill) ──
+      clone.querySelectorAll('.cell-badge').forEach(el=>{
+        const abbr = el.textContent.trim().toUpperCase();
+        const isPreset = PRESET_ABBRS.includes(abbr);
+        if(isPreset){
+          // Circle with uppercase text
+          const fs = abbr.length>=5?'11px':abbr.length>=4?'12px':abbr.length>=3?'14px':'17px';
+          const isK = abbr.includes('(K)');
+          const bgStyle = isK
+            ? 'background:linear-gradient(135deg,#064A30,#0E7A4A);border:2px solid rgba(16,185,129,0.6);color:#A7F3D0;'
+            : 'background:linear-gradient(135deg,#0A1E50,#1258B0);border:2px solid rgba(79,195,247,0.6);color:#FFFFFF;';
+          el.style.cssText=`${bgStyle}position:absolute;top:10px;right:10px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow',sans-serif;font-weight:900;font-size:${fs};letter-spacing:-.3px;text-transform:uppercase;text-align:center;line-height:1.1;box-sizing:border-box;text-shadow:0 1px 3px rgba(0,0,0,0.3);`;
+          el.textContent = abbr;
+        } else {
+          // Custom = pill/bubble with full text
+          el.style.cssText=`position:absolute;top:10px;right:10px;max-width:120px;height:auto;border-radius:20px;padding:5px 10px;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:.04em;text-transform:uppercase;text-align:center;line-height:1.2;background:linear-gradient(135deg,#0A1E50,#1258B0);border:1.5px solid rgba(79,195,247,0.5);color:#FFFFFF;box-sizing:border-box;word-break:break-word;white-space:normal;`;
+        }
       });
 
-      // ── Duty label padding — clear the bigger badge ──
-      clone.querySelectorAll('.duty-lbl').forEach(el => {
-        el.style.paddingRight = '74px';
+      // ── Duty label ──
+      clone.querySelectorAll('.duty-lbl').forEach(el=>{
+        const isMph = el.style.color&&(el.style.color.includes('A060')||el.style.color.includes('F59E'));
+        const isTrain = el.style.color&&el.style.color.includes('C890');
+        let col='#1A6090', bdrL='#3A90C0';
+        if(isMph){col='#7A4A00';bdrL='#B07010';}
+        if(isTrain){col='#7A4A00';bdrL='#B07010';}
+        if(isMajalis&&!isMph&&!isTrain){col='#7A1428';bdrL='rgba(185,28,60,0.6)';}
+        el.style.cssText=`font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:${col};border-left:3px solid ${bdrL};padding-left:7px;padding-right:70px;margin-bottom:5px;line-height:1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
       });
 
-      // ── Duty label (JAMĀTKHANA / name of majalis / MPH) ──
-      clone.querySelectorAll('.duty-lbl').forEach(el => {
-        const isMph = el.classList.contains('mph-lbl') || el.style.color.includes('F59E0B') || el.style.color.includes('A06010');
-        const isTrainLbl = el.style.color.includes('C8900A');
-        let lblCol = '#2A6A9A';
-        let lblBdr = '#4A90C0';
-        if(isMph){ lblCol='#8A5A00'; lblBdr='#C08020'; }
-        if(isTrainLbl){ lblCol='#9A6000'; lblBdr='#C08010'; }
-        if(isMajalis && !isMph && !isTrainLbl){ lblCol='#8A1830'; lblBdr='rgba(185,28,60,0.6)'; }
-        el.style.cssText = `
-          font-family:'DM Sans',sans-serif;
-          font-size:11px;font-weight:700;
-          text-transform:uppercase;letter-spacing:.08em;
-          color:${lblCol};
-          border-left:2px solid ${lblBdr};
-          padding-left:6px;padding-right:44px;
-          margin-bottom:5px;line-height:1;
-          display:block;white-space:nowrap;
-          overflow:hidden;text-overflow:ellipsis;
-        `;
+      // ── Volunteer / Trainer name ──
+      clone.querySelectorAll('.duty-name').forEach(el=>{
+        const isMphN = el.style.color&&(el.style.color.includes('E8C0')||el.style.color.includes('C8A0'));
+        let col = isMajalis ? '#1A0510' : isTraining ? '#2A1800' : '#0A1828';
+        if(isMphN) col='#3A2800';
+        el.style.cssText=`font-family:'DM Sans',sans-serif;font-size:22px;font-weight:800;color:${col};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:100%;line-height:1.25;letter-spacing:-.2px;`;
       });
 
-      // ── Volunteer name — biggest, brightest ──
-      clone.querySelectorAll('.duty-name').forEach(el => {
-        const isMphName = el.style.color.includes('E8C060') || el.style.color.includes('FCD34D');
-        const isTrainName = el.style.color.includes('FCD34D') || el.style.color.includes('F5CC70');
-        let nameCol = '#0A1E3E';
-        if(isMajalis && !isMphName) nameCol = '#4A0A18';
-        if(isTraining || isTrainName) nameCol = '#5A3A00';
-        if(isMphName) nameCol = '#5A4000';
-        el.style.cssText = `
-          font-family:'DM Sans',sans-serif;
-          font-size:22px;font-weight:700;
-          color:${nameCol};
-          white-space:nowrap;overflow:hidden;
-          text-overflow:ellipsis;display:block;
-          max-width:100%;line-height:1.3;
-          margin-bottom:1px;
-        `;
+      // ── MPH Duty 2 name (smaller) ──
+      clone.querySelectorAll('.duty-name + .duty-name').forEach(el=>{
+        el.style.fontSize='16px';
+        el.style.fontWeight='700';
+        el.style.color='#3A3000';
+        el.style.marginTop='1px';
       });
 
-      // ── Unassigned ──
-      clone.querySelectorAll('.duty-unassigned').forEach(el => {
-        el.style.cssText = `
-          font-family:'DM Sans',sans-serif;
-          font-size:15px;font-style:italic;
-          color:#8AAAC8;
-        `;
+      // ── Trainee line ──
+      clone.querySelectorAll('div[style*="A07830"],div[style*="B08840"]').forEach(el=>{
+        el.style.cssText=`font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#5A3A00;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px;display:block;line-height:1.3;`;
+        // Update emoji label inside
+        el.querySelectorAll('span').forEach(s=>{s.style.color='#A06000';s.style.fontWeight='700';});
       });
 
       // ── SUP tag ──
-      clone.querySelectorAll('.sup-tag').forEach(el => {
-        el.style.cssText = `
-          display:inline-block;
-          font-size:11px;font-weight:700;
-          padding:3px 9px;border-radius:4px;margin-top:4px;
-          background:rgba(21,101,192,0.12);
-          color:#1565C0;
-          border:1px solid rgba(21,101,192,0.35);
-        `;
+      clone.querySelectorAll('.sup-tag').forEach(el=>{
+        el.style.cssText=`display:inline-block;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:3px;background:rgba(21,101,192,0.1);color:#1258B0;border:1px solid rgba(21,101,192,0.3);letter-spacing:.04em;`;
       });
 
-      // ── MPH separator ──
-      clone.querySelectorAll('.duty-sep').forEach(el => {
-        el.style.cssText = 'border:none;border-top:1px solid rgba(21,101,192,0.15);margin:7px 0 6px;';
+      // ── MPH divider ──
+      clone.querySelectorAll('.duty-sep').forEach(el=>{
+        el.style.cssText='border:none;border-top:1.5px solid rgba(21,101,192,0.18);margin:7px 0 6px;';
       });
 
-      // ── Training pill (top-right) — much bigger, centered ──
-      clone.querySelectorAll('div[style*="border-radius:20px"]').forEach(el => {
-        el.style.fontSize = '13px';
-        el.style.padding = '6px 14px';
-        el.style.top = '10px';
-        el.style.right = '10px';
-        el.style.letterSpacing = '.06em';
-        el.style.fontWeight = '800';
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.style.justifyContent = 'center';
-        el.style.gap = '5px';
-        el.style.lineHeight = '1';
+      // ── Duty label right-padding (clear badge) ──
+      clone.querySelectorAll('.duty-lbl').forEach((el,i)=>{
+        if(i===0) el.style.paddingRight='70px'; // only first label needs to clear badge
       });
 
-      // Adjust duty label padding for training cells too
-      if(isTraining){
-        clone.querySelectorAll('.duty-lbl').forEach(el => {
-          el.style.paddingRight = '100px';
-        });
-      }
-
-      // ── Trainee line ──
-      clone.querySelectorAll('div[style*="A07830"]').forEach(el => {
-        el.style.fontSize = '17px';
-        el.style.fontWeight = '600';
-        el.style.whiteSpace = 'nowrap';
-        el.style.overflow = 'hidden';
-        el.style.textOverflow = 'ellipsis';
-        el.style.color = '#7A5000';
-        el.style.marginTop = '6px';
-        el.style.lineHeight = '1.3';
+      // ── Training pill ──
+      clone.querySelectorAll('div[style*="border-radius:20px"]').forEach(el=>{
+        el.style.cssText=`position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#7A3000,#B45309);color:#FCD34D;border:1.5px solid rgba(245,158,11,0.5);border-radius:20px;padding:5px 12px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;line-height:1.3;box-shadow:0 2px 8px rgba(180,83,9,0.3);`;
       });
 
-      // ── Trainer name on training days (duty-name inside training cell) ──
-      if(isTraining){
-        clone.querySelectorAll('.duty-name').forEach(el => {
-          el.style.fontSize = '20px';
-          el.style.fontWeight = '800';
-          el.style.color = '#4A3000';
-        });
-      }
+      // ── Unassigned ──
+      clone.querySelectorAll('.duty-unassigned').forEach(el=>{
+        el.style.cssText=`font-family:'DM Sans',sans-serif;font-size:13px;font-style:italic;color:#A0B8CC;`;
+      });
 
       gridWrap.appendChild(clone);
     });
@@ -2906,48 +2771,43 @@ async function downloadRosterPNG(){
     container.appendChild(gridWrap);
     document.body.appendChild(container);
 
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#e8f4ff',
-      logging: false,
-      width: 1680,
+    const canvas = await html2canvas(container,{
+      scale:2.5,
+      useCORS:true,
+      allowTaint:true,
+      backgroundColor:'#eaf3ff',
+      logging:false,
+      width:1820,
     });
 
     document.body.removeChild(container);
 
-    // Trim blank bottom rows
-    const ctx = canvas.getContext('2d');
-    const bg = [232,244,255];
-    let cropH = canvas.height;
-    outer: for(let y=canvas.height-1; y>=canvas.height*0.4; y--){
-      const row = ctx.getImageData(0,y,canvas.width,1).data;
-      for(let x=0; x<row.length; x+=4){
-        if(Math.abs(row[x]-bg[0])+Math.abs(row[x+1]-bg[1])+Math.abs(row[x+2]-bg[2])>18){
-          cropH=y+12; break outer;
-        }
+    // Trim blank rows
+    const ctx=canvas.getContext('2d');
+    const bgC=[234,243,255];
+    let cropH=canvas.height;
+    outer: for(let y=canvas.height-1;y>=canvas.height*0.4;y--){
+      const row=ctx.getImageData(0,y,canvas.width,1).data;
+      for(let x=0;x<row.length;x+=4){
+        if(Math.abs(row[x]-bgC[0])+Math.abs(row[x+1]-bgC[1])+Math.abs(row[x+2]-bgC[2])>22){cropH=y+14;break outer;}
       }
     }
-
-    const out = document.createElement('canvas');
-    out.width = canvas.width;
-    out.height = cropH;
-    out.getContext('2d').drawImage(canvas, 0, 0);
-
-    const link = document.createElement('a');
-    link.download = `AV-Roster-${monthTitle.replace(' ','-')}.jpeg`;
-    link.href = out.toDataURL('image/jpeg', 0.92);
+    const out=document.createElement('canvas');
+    out.width=canvas.width;out.height=cropH;
+    out.getContext('2d').drawImage(canvas,0,0);
+    const link=document.createElement('a');
+    link.download=`AV-Roster-${monthTitle.replace(' ','-')}.jpeg`;
+    link.href=out.toDataURL('image/jpeg',0.93);
     link.click();
     toast('JPG saved!');
-} catch(e){
+  } catch(e){
     console.error(e);
     toast('Screenshot failed: '+e.message,'err');
-    const c = document.querySelector('div[style*="left:-9999px"]');
+    const c=document.querySelector('div[style*="left:-9999px"]');
     if(c) document.body.removeChild(c);
   } finally {
-    btn.innerHTML = orig;
-    btn.disabled = false;
+    btn.innerHTML=orig;
+    btn.disabled=false;
   }
 }
 
