@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JK Roster — Auckland Jamatkhana</title>
+<title>IV Hub — Auckland Jamatkhana</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -73,6 +73,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--dp);color:var(--dt);min-h
 /* Role-gated nav items — hidden until applySession shows them */
 .nav-admin{display:none;}
 .nav-owner{display:none;}
+.nav-volunteer{display:none;}
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
 .ph h1{font-family:'Barlow',sans-serif;font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;}
 .ph p{color:var(--dm);font-size:11px;margin-top:2px;}
@@ -669,6 +670,213 @@ tr:hover td{background:var(--ds2);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════
+   MY DUTIES PAGE
+═══════════════════════════════════ */
+.md-hero{
+  background:linear-gradient(135deg,#020B18 0%,#071628 50%,#050D1C 100%);
+  border:1px solid rgba(79,195,247,0.15);
+  border-radius:16px;
+  padding:32px 36px 28px;
+  margin-bottom:22px;
+  position:relative;
+  overflow:visible;
+}
+.md-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 10% 50%,rgba(21,101,192,0.2) 0%,transparent 55%),
+             radial-gradient(ellipse at 85% 20%,rgba(79,195,247,0.07) 0%,transparent 50%);
+  pointer-events:none;
+  border-radius:16px;
+}
+.md-hero-inner{position:relative;z-index:1;}
+.md-hero-title{
+  font-family:'Barlow',sans-serif;font-size:13px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.18em;color:rgba(179,229,252,0.55);
+  margin-bottom:10px;
+}
+.md-search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.md-search-wrap{
+  position:relative;flex:1;min-width:220px;max-width:480px;
+}
+.md-search-wrap::before{
+  content:'⌕';position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  font-size:18px;color:rgba(79,195,247,0.5);pointer-events:none;z-index:1;
+}
+#mdSearch{
+  width:100%;
+  background:rgba(6,15,30,0.8);
+  border:1px solid rgba(79,195,247,0.25);
+  border-radius:12px;
+  padding:13px 16px 13px 42px;
+  color:#E8F4FD;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  backdrop-filter:blur(4px);
+}
+#mdSearch::placeholder{color:rgba(122,174,203,0.4);}
+#mdSearch:focus{border-color:rgba(79,195,247,0.6);box-shadow:0 0 0 3px rgba(79,195,247,0.08);}
+.md-search-btn{
+  background:linear-gradient(135deg,#1565C0,#1976D2);
+  color:#fff;border:none;border-radius:10px;
+  padding:13px 22px;font-family:'DM Sans',sans-serif;
+  font-weight:700;font-size:13px;cursor:pointer;
+  white-space:nowrap;
+  transition:all .18s;
+  box-shadow:0 4px 14px rgba(21,101,192,0.35);
+}
+.md-search-btn:hover{box-shadow:0 6px 20px rgba(21,101,192,0.55);transform:translateY(-1px);}
+.md-dropdown{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:#071628;border:1px solid rgba(79,195,247,0.3);
+  border-radius:10px;z-index:9999;
+  box-shadow:0 16px 40px rgba(0,0,0,0.7);
+  overflow:hidden;display:none;
+  max-height:220px;overflow-y:auto;
+}
+.md-dropdown.open{display:block;animation:fadeIn .15s ease;}
+.md-drop-item{
+  padding:10px 16px;font-size:13px;color:#E8F4FD;cursor:pointer;
+  transition:background .12s;font-weight:500;
+  border-bottom:1px solid rgba(79,195,247,0.06);
+}
+.md-drop-item:last-child{border-bottom:none;}
+.md-drop-item:hover,.md-drop-item.selected{background:rgba(79,195,247,0.1);color:#4FC3F7;}
+
+/* Results area */
+#mdResults{display:none;}
+.md-results-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:10px;
+}
+.md-vol-name{
+  font-family:'Barlow',sans-serif;font-size:26px;font-weight:900;
+  text-transform:uppercase;letter-spacing:.04em;
+  background:linear-gradient(135deg,#fff 20%,#90CAF9 70%,#4FC3F7 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.md-month-badge{
+  background:rgba(79,195,247,0.1);border:1px solid rgba(79,195,247,0.25);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#4FC3F7;
+}
+.md-screenshot-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,#7C3AED,#6D28D9);
+  color:#fff;border:none;border-radius:9px;
+  padding:9px 18px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:12px;
+  cursor:pointer;box-shadow:0 4px 14px rgba(109,40,217,0.35);
+  transition:all .18s;
+}
+.md-screenshot-btn:hover{box-shadow:0 6px 20px rgba(109,40,217,0.55);transform:translateY(-1px);}
+
+/* Summary bar */
+.md-summary{
+  display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;
+}
+.md-sum-card{
+  background:var(--ds);border:1px solid var(--db);border-radius:10px;
+  padding:12px 18px;flex:1;min-width:120px;position:relative;overflow:hidden;
+}
+.md-sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.md-sum-card.jk::before{background:linear-gradient(90deg,#1565C0,#4FC3F7);}
+.md-sum-card.mph::before{background:linear-gradient(90deg,#7C3AED,#C4B5FD);}
+.md-sum-card.sup::before{background:linear-gradient(90deg,#065F46,#34D399);}
+.md-sum-card.tr::before{background:linear-gradient(90deg,#92400E,#FCD34D);}
+.md-sum-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dm);margin-bottom:4px;}
+.md-sum-val{font-family:'Barlow',sans-serif;font-size:28px;font-weight:900;line-height:1;}
+.md-sum-card.jk .md-sum-val{color:#4FC3F7;}
+.md-sum-card.mph .md-sum-val{color:#C4B5FD;}
+.md-sum-card.sup .md-sum-val{color:#34D399;}
+.md-sum-card.tr .md-sum-val{color:#FCD34D;}
+
+/* Duty cards grid */
+.md-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:12px;
+}
+.md-duty-card{
+  background:#050D1C;
+  border:1px solid rgba(79,195,247,0.1);
+  border-radius:13px;
+  padding:16px 18px;
+  position:relative;
+  overflow:hidden;
+  transition:border-color .18s,transform .18s;
+}
+.md-duty-card:hover{border-color:rgba(79,195,247,0.3);transform:translateY(-2px);}
+.md-duty-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  border-radius:3px 0 0 3px;
+}
+.md-duty-card.type-jk::before{background:linear-gradient(180deg,#1565C0,#4FC3F7);}
+.md-duty-card.type-mph::before{background:linear-gradient(180deg,#7C3AED,#C4B5FD);}
+.md-duty-card.type-sup::before{background:linear-gradient(180deg,#065F46,#34D399);}
+.md-duty-card.type-tr-trainer::before{background:linear-gradient(180deg,#92400E,#FCD34D);}
+.md-duty-card.type-tr-trainee::before{background:linear-gradient(180deg,#7F1D1D,#F87171);}
+
+.md-card-date{
+  font-family:'Barlow',sans-serif;font-size:28px;font-weight:900;
+  color:#E8F4FD;line-height:1;margin-bottom:3px;
+}
+.md-card-dow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dm);margin-bottom:10px;}
+.md-card-type{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  padding:3px 9px;border-radius:20px;margin-bottom:10px;
+}
+.md-card-type.jk{background:rgba(21,101,192,0.18);color:#4FC3F7;border:1px solid rgba(79,195,247,0.25);}
+.md-card-type.mph{background:rgba(124,58,237,0.18);color:#C4B5FD;border:1px solid rgba(124,58,237,0.3);}
+.md-card-type.sup{background:rgba(6,95,70,0.25);color:#34D399;border:1px solid rgba(52,211,153,0.3);}
+.md-card-type.tr-trainer{background:rgba(146,64,14,0.25);color:#FCD34D;border:1px solid rgba(245,158,11,0.3);}
+.md-card-type.tr-trainee{background:rgba(127,29,29,0.25);color:#F87171;border:1px solid rgba(248,113,113,0.3);}
+.md-card-detail{font-size:11px;color:var(--dm);line-height:1.6;margin-top:4px;}
+.md-card-detail b{color:#E8F4FD;font-weight:600;}
+
+.md-mj-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:rgba(21,101,192,0.1);border:1px solid rgba(79,195,247,0.15);
+  border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;color:#4FC3F7;
+  margin-top:7px;
+}
+
+.md-empty{
+  text-align:center;padding:60px 20px;
+  font-size:14px;color:var(--dm);line-height:1.8;
+}
+.md-empty .md-empty-icon{font-size:40px;margin-bottom:14px;opacity:0.5;}
+
+/* Screenshot capture area */
+#mdCapture{
+  background:#020B18;
+  border-radius:14px;
+  overflow:hidden;
+}
+.md-cap-hdr{
+  background:linear-gradient(135deg,#050E1E,#0A1E3E);
+  padding:20px 26px 16px;
+  border-bottom:1px solid rgba(79,195,247,0.15);
+}
+.md-cap-title{
+  font-family:'Barlow',sans-serif;font-size:22px;font-weight:900;
+  text-transform:uppercase;letter-spacing:.06em;
+  background:linear-gradient(135deg,#fff 20%,#4FC3F7 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.md-cap-sub{font-size:10px;color:rgba(122,174,203,0.6);margin-top:4px;text-transform:uppercase;letter-spacing:.1em;}
+
+@media(max-width:768px){
+  .md-hero{padding:20px 18px;}
+  .md-search-row{flex-direction:column;align-items:stretch;}
+  .md-search-wrap{max-width:100%;}
+  .md-screenshot-btn{font-size:11px;padding:7px 12px;}
+  .md-grid{grid-template-columns:1fr;}
+  .md-summary{gap:7px;}
+}
 </style>
 </head>
 <body>
@@ -679,8 +887,8 @@ tr:hover td{background:var(--ds2);}
   <div class="lbox">
     <div class="llogo">
       <div class="llogo-iv">IV</div>
-      <h1>Auckland Jamatkhana</h1>
-      <p>Volunteer Rostering System</p>
+      <h1>IV Hub</h1>
+      <p>Auckland Jamatkhana · IV &amp; AV Volunteers</p>
     </div>
     <div class="lfg">
       <label>Username</label>
@@ -705,19 +913,40 @@ tr:hover td{background:var(--ds2);}
   <aside class="sidebar">
     <div class="sb-logo">
       <div class="sb-iv">IV</div>
-      <h2>JK Roster</h2>
-      <p>Auckland · Volunteer System</p>
+      <h2>IV Hub</h2>
+      <p>Auckland · IV &amp; AV Volunteers</p>
     </div>
     <nav class="sb-nav">
-      <div class="nav-sec">Main</div>
+
+      <!-- ── GENERAL ── -->
+      <div class="nav-sec">General</div>
       <div class="nav-item active" data-page="dashboard" onclick="nav(this)"><span class="ni">⊞</span> Dashboard</div>
-      <div class="nav-item" data-page="calendar" onclick="nav(this)"><span class="ni">📅</span> Monthly Roster</div>
-      <div class="nav-sec nav-admin">Management</div>
-      <div class="nav-item nav-admin" data-page="override" onclick="nav(this)"><span class="ni">✏️</span> Manual Override</div>
-      <div class="nav-item nav-admin" data-page="volunteers" onclick="nav(this)"><span class="ni">👥</span> User Management</div>
+      <div class="nav-item nav-volunteer" data-page="myduties" onclick="nav(this)"><span class="ni">🗓️</span> My Duties</div>
+
+      <!-- ── IV ── -->
+      <div class="nav-sec nav-owner">IV</div>
+      <div class="nav-item nav-owner" data-page="iv-roster" onclick="nav(this)"><span class="ni">📋</span> Monthly Roster</div>
+
+      <!-- ── IV MANAGEMENT ── -->
+      <div class="nav-sec nav-owner">IV Management</div>
+      <div class="nav-item nav-owner" data-page="iv-usercreation" onclick="nav(this)"><span class="ni">👤</span> User Creation</div>
+      <div class="nav-item nav-owner" data-page="iv-addons" onclick="nav(this)"><span class="ni">➕</span> Add-ons</div>
+
+      <!-- ── AV ── -->
+      <div class="nav-sec nav-volunteer">AV</div>
+      <div class="nav-item nav-volunteer" data-page="calendar" onclick="nav(this)"><span class="ni">📅</span> Monthly Roster</div>
+
+      <!-- ── AV MANAGEMENT ── -->
+      <div class="nav-sec nav-admin">AV Management</div>
       <div class="nav-item nav-admin" data-page="events" onclick="nav(this)"><span class="ni">🕌</span> Add-ons</div>
+      <div class="nav-item nav-admin" data-page="volunteers" onclick="nav(this)"><span class="ni">👥</span> User Management</div>
+      <div class="nav-item nav-admin" data-page="override" onclick="nav(this)"><span class="ni">✏️</span> Manual Override</div>
+
+      <!-- ── MANAGEMENT ── -->
+      <div class="nav-sec nav-admin">Management</div>
       <div class="nav-item nav-admin" data-page="audit" onclick="nav(this)"><span class="ni">🔍</span> Audit Logs</div>
       <div class="nav-item nav-owner" data-page="adminpanel" onclick="nav(this)"><span class="ni">⚙️</span> Admin Panel</div>
+
     </nav>
     <div class="sb-bot">
       <div class="uchip">
@@ -813,6 +1042,64 @@ tr:hover td{background:var(--ds2);}
       </div>
     </div>
 
+    <!-- MY DUTIES -->
+    <div class="page" id="page-myduties">
+      <div class="ph">
+        <div><h1>My Duties</h1><p>Search your name to see your assigned duties for the current roster month</p></div>
+      </div>
+
+      <!-- Search hero -->
+      <div class="md-hero">
+        <div class="md-hero-inner">
+          <div class="md-hero-title">🗓️ Find Your Duties</div>
+          <div class="md-search-row">
+            <div class="md-search-wrap">
+              <input id="mdSearch" type="text" placeholder="Start typing your name…" autocomplete="off"
+                oninput="mdOnInput()" onkeydown="mdOnKey(event)" onfocus="mdShowDrop()" onblur="setTimeout(mdHideDrop,200)">
+              <div class="md-dropdown" id="mdDropdown"></div>
+            </div>
+            <button class="md-search-btn" onclick="mdSearch()">Search Duties</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="mdResults">
+        <div class="md-results-hdr">
+          <div>
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--dm);margin-bottom:4px;">Showing duties for</div>
+            <div class="md-vol-name" id="mdVolName">—</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="md-month-badge" id="mdMonthBadge">—</div>
+            <button class="md-screenshot-btn" onclick="mdScreenshot()">📷 Save / Print</button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="md-summary">
+          <div class="md-sum-card jk"><div class="md-sum-label">JK Duties</div><div class="md-sum-val" id="mdCntJK">0</div></div>
+          <div class="md-sum-card mph"><div class="md-sum-label">MPH Duties</div><div class="md-sum-val" id="mdCntMPH">0</div></div>
+          <div class="md-sum-card sup"><div class="md-sum-label">Supervision</div><div class="md-sum-val" id="mdCntSup">0</div></div>
+          <div class="md-sum-card tr"><div class="md-sum-label">Training</div><div class="md-sum-val" id="mdCntTr">0</div></div>
+        </div>
+
+        <!-- Duty cards -->
+        <div id="mdCapture">
+          <div class="md-cap-hdr" id="mdCapHdr" style="display:none;">
+            <div class="md-cap-title" id="mdCapTitle">MY DUTIES</div>
+            <div class="md-cap-sub" id="mdCapSub"></div>
+          </div>
+          <div id="mdGrid" class="md-grid"></div>
+          <div id="mdEmpty" class="md-empty" style="display:none;">
+            <div class="md-empty-icon">🔍</div>
+            <div>No duties found for <b id="mdEmptyName"></b> in <b id="mdEmptyMonth"></b>.</div>
+            <div style="margin-top:8px;font-size:12px;">Check the Monthly Roster for the full schedule, or ask your administrator.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- USER MANAGEMENT -->
     <div class="page admin-page" id="page-volunteers">
       <div class="ph"><div><h1>User Management</h1><p>Volunteer profiles, availability and roles</p></div></div>
@@ -900,12 +1187,16 @@ tr:hover td{background:var(--ds2);}
             <div style="position:relative;z-index:1;">
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end;">
                 <div>
-                  <div style="font-size:9px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee</div>
-                  <input type="text" id="trTrainee" placeholder="Trainee name…" class="wi" style="border-color:rgba(245,158,11,0.3);">
+                  <div style="font-size:9px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee <span style="color:rgba(245,158,11,0.5);font-weight:500;text-transform:none;letter-spacing:0;">(Junior Team Member)</span></div>
+                  <select id="trTrainee" class="ws" style="background:#1C1000;color:#E8F4FD;border:1px solid rgba(245,158,11,0.3);">
+                    <option value="">— Select trainee —</option>
+                  </select>
                 </div>
                 <div>
-                  <div style="font-size:9px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer</div>
-                  <input type="text" id="trTrainer" placeholder="Trainer name…" class="wi" style="border-color:rgba(245,158,11,0.3);">
+                  <div style="font-size:9px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer <span style="color:rgba(245,158,11,0.5);font-weight:500;text-transform:none;letter-spacing:0;">(Supervisor)</span></div>
+                  <select id="trTrainer" class="ws" style="background:#1C1000;color:#E8F4FD;border:1px solid rgba(245,158,11,0.3);">
+                    <option value="">— Select trainer —</option>
+                  </select>
                 </div>
                 <div>
                   <div style="font-size:9px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Date</div>
@@ -1052,12 +1343,16 @@ tr:hover td{background:var(--ds2);}
               <div id="or-tr-current" style="font-size:11px;color:#4A6A80;margin-bottom:10px;font-style:italic;">No training on this day.</div>
               <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end;">
                 <div>
-                  <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee</div>
-                  <input type="text" id="or-tr-trainee" placeholder="Trainee name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+                  <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee <span style="color:rgba(252,211,77,0.45);font-weight:500;text-transform:none;letter-spacing:0;">(Junior)</span></div>
+                  <select id="or-tr-trainee" class="ws" style="background:#0E100A;color:#E8F4FD;border:1px solid rgba(200,150,40,0.3);">
+                    <option value="">— Select trainee —</option>
+                  </select>
                 </div>
                 <div>
-                  <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer</div>
-                  <input type="text" id="or-tr-trainer" placeholder="Trainer name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+                  <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer <span style="color:rgba(252,211,77,0.45);font-weight:500;text-transform:none;letter-spacing:0;">(Supervisor)</span></div>
+                  <select id="or-tr-trainer" class="ws" style="background:#0E100A;color:#E8F4FD;border:1px solid rgba(200,150,40,0.3);">
+                    <option value="">— Select trainer —</option>
+                  </select>
                 </div>
                 <button onclick="orAddTraining()" style="height:38px;padding:0 14px;background:linear-gradient(135deg,#92400E,#B45309);color:#FCD34D;border:none;border-radius:var(--r);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">+ Add</button>
               </div>
@@ -1235,12 +1530,16 @@ tr:hover td{background:var(--ds2);}
             <div id="ap-tr-current" style="font-size:11px;color:#4A6A80;margin-bottom:10px;font-style:italic;">No training on this day.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:flex-end;">
               <div>
-                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee</div>
-                <input type="text" id="ap-tr-trainee" placeholder="Trainee name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainee <span style="color:rgba(252,211,77,0.45);font-weight:500;text-transform:none;letter-spacing:0;">(Junior)</span></div>
+                <select id="ap-tr-trainee" class="ws" style="background:#0E100A;color:#E8F4FD;border:1px solid rgba(200,150,40,0.3);">
+                  <option value="">— Select trainee —</option>
+                </select>
               </div>
               <div>
-                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer</div>
-                <input type="text" id="ap-tr-trainer" placeholder="Trainer name…" class="wi" style="border-color:rgba(200,150,40,0.3);">
+                <div style="font-size:9px;font-weight:700;color:#FCD34D;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;">Trainer <span style="color:rgba(252,211,77,0.45);font-weight:500;text-transform:none;letter-spacing:0;">(Supervisor)</span></div>
+                <select id="ap-tr-trainer" class="ws" style="background:#0E100A;color:#E8F4FD;border:1px solid rgba(200,150,40,0.3);">
+                  <option value="">— Select trainer —</option>
+                </select>
               </div>
               <button onclick="apAddTraining()" style="height:38px;padding:0 14px;background:linear-gradient(135deg,#92400E,#B45309);color:#FCD34D;border:none;border-radius:var(--r);font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;">+ Add</button>
             </div>
@@ -1252,6 +1551,42 @@ tr:hover td{background:var(--ds2);}
         </div>
       </div>
 
+    </div>
+
+    <!-- IV MONTHLY ROSTER (Owner+, blank) -->
+    <div class="page" id="page-iv-roster">
+      <div class="ph">
+        <div><h1>IV Monthly Roster</h1><p>Ismaili Volunteers roster — coming soon</p></div>
+      </div>
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:60px 40px;text-align:center;margin-top:8px;">
+        <div style="font-size:48px;margin-bottom:18px;opacity:0.4;">📋</div>
+        <div style="font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-lt);margin-bottom:10px;">IV Monthly Roster</div>
+        <div style="font-size:13px;color:var(--dm);line-height:1.7;max-width:400px;margin:0 auto;">This section is under construction.<br>The IV roster will be available here soon.</div>
+      </div>
+    </div>
+
+    <!-- IV USER CREATION (Owner+, blank) -->
+    <div class="page" id="page-iv-usercreation">
+      <div class="ph">
+        <div><h1>IV User Creation</h1><p>Manage Ismaili Volunteers user accounts</p></div>
+      </div>
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:60px 40px;text-align:center;margin-top:8px;">
+        <div style="font-size:48px;margin-bottom:18px;opacity:0.4;">👤</div>
+        <div style="font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-lt);margin-bottom:10px;">IV User Creation</div>
+        <div style="font-size:13px;color:var(--dm);line-height:1.7;max-width:400px;margin:0 auto;">This section is under construction.<br>IV user account management will be available here soon.</div>
+      </div>
+    </div>
+
+    <!-- IV ADD-ONS (Owner+, blank) -->
+    <div class="page" id="page-iv-addons">
+      <div class="ph">
+        <div><h1>IV Add-ons</h1><p>Majalis &amp; training management for IV roster</p></div>
+      </div>
+      <div style="background:var(--ds);border:1px solid var(--db);border-radius:14px;padding:60px 40px;text-align:center;margin-top:8px;">
+        <div style="font-size:48px;margin-bottom:18px;opacity:0.4;">➕</div>
+        <div style="font-family:'Barlow',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--blue-lt);margin-bottom:10px;">IV Add-ons</div>
+        <div style="font-size:13px;color:var(--dm);line-height:1.7;max-width:400px;margin:0 auto;">This section is under construction.<br>IV add-ons and scheduling will be available here soon.</div>
+      </div>
     </div>
 
     <!-- AI AUTO-ROSTER -->
@@ -1730,6 +2065,10 @@ function applySession(){
   urlEl.style.color = isOwner ? '#F59E0B' : isAdmin ? '#4FC3F7' : '#94A3B8';
 
   // ── Show/hide nav items by role ──
+  // nav-volunteer: visible to everyone logged in (volunteer, admin, owner)
+  document.querySelectorAll('.nav-volunteer').forEach(el => {
+    el.style.display = el.classList.contains('nav-item') ? 'flex' : 'block';
+  });
   // nav-admin: visible to admin + owner
   document.querySelectorAll('.nav-admin').forEach(el => {
     el.style.display = isAdmin ? (el.classList.contains('nav-item') ? 'flex' : 'block') : 'none';
@@ -1823,7 +2162,7 @@ function logout(){
 /* ═══════════════════════════════════
    RENDER ALL
 ═══════════════════════════════════ */
-function renderAll(){updateStats();renderCal();renderVolCards();renderMajalisCards();renderTrainingCards();renderUpcoming();}
+function renderAll(){updateStats();renderCal();renderVolCards();renderMajalisCards();renderTrainingCards();renderUpcoming();populateTrainingDropdowns();}
 
 /* ═══════════════════════════════════
    STATS
@@ -2584,12 +2923,30 @@ function renderTrainingCards(){
   }).join('');
 }
 
+function populateTrainingDropdowns(){
+  const juniors   = vols.filter(v=>v.status==='active' && ((v.roles||[]).includes('Junior Team Member') || v.type==='Junior Team Member')).sort((a,b)=>a.name.localeCompare(b.name));
+  const supervisors = vols.filter(v=>v.status==='active' && ((v.roles||[]).includes('Supervisor') || v.type==='Supervisor')).sort((a,b)=>a.name.localeCompare(b.name));
+
+  const traineeOpts = '<option value="">— Select trainee —</option>' + juniors.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+  const trainerOpts = '<option value="">— Select trainer —</option>' + supervisors.map(v=>`<option value="${esc(v.name)}">${esc(v.name)}</option>`).join('');
+
+  // Populate all three training forms
+  ['trTrainee','or-tr-trainee','ap-tr-trainee'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.innerHTML = traineeOpts; }
+  });
+  ['trTrainer','or-tr-trainer','ap-tr-trainer'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.innerHTML = trainerOpts; }
+  });
+}
+
 function addTraining(){
   const trainee=document.getElementById('trTrainee').value.trim();
   const trainer=document.getElementById('trTrainer').value.trim();
   const date=document.getElementById('trDate').value;
-  if(!trainee){toast('Enter a trainee name','err');return;}
-  if(!trainer){toast('Enter a trainer name','err');return;}
+  if(!trainee){toast('Select a trainee (Junior Team Member)','err');return;}
+  if(!trainer){toast('Select a trainer (Supervisor)','err');return;}
   if(!date){toast('Select a date','err');return;}
   const newTr={id:Date.now(),name:trainee,type:'Training',trainee,trainer,date,time:'',category:'training'};
   trainings.push(newTr);
@@ -2675,7 +3032,7 @@ async function downloadRosterPNG(){
     });
     const subEl=document.createElement('div');
     subEl.style.cssText=`font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.35em;color:rgba(180,215,255,0.7);margin-bottom:12px;position:relative;z-index:1;`;
-    subEl.textContent='Auckland Jamatkhana · AV Volunteer Roster';
+    subEl.textContent='Auckland Jamatkhana · AV Roster';
     titleEl.appendChild(subEl);
     const titleInner=document.createElement('div');
     titleInner.style.cssText=`position:relative;z-index:1;line-height:1;display:flex;align-items:baseline;justify-content:center;gap:18px;`;
@@ -3185,6 +3542,7 @@ function apCreateUser(){
 
 function apLoadDayFields(prefix){
   prefix = prefix || 'ap-';
+  populateTrainingDropdowns();
   const ds = document.getElementById(prefix+'edit-date').value;
   if(!ds) return;
 
@@ -3359,8 +3717,8 @@ function apAddTraining(prefix){
   if(!ds){ toast('Pick a date first','err'); return; }
   const trainee = document.getElementById(prefix+'tr-trainee').value.trim();
   const trainer = document.getElementById(prefix+'tr-trainer').value.trim();
-  if(!trainee){ toast('Enter a trainee name','err'); return; }
-  if(!trainer){ toast('Enter a trainer name','err'); return; }
+  if(!trainee){ toast('Select a trainee (Junior Team Member)','err'); return; }
+  if(!trainer){ toast('Select a trainer (Supervisor)','err'); return; }
 
   // Remove existing training on this day first
   const existing = trainings.find(e=>e.date===ds);
@@ -3679,7 +4037,7 @@ function nav(el){
   const _isAdmin = _role === 'admin' || _isOwner;
   // Enforce page access
   const _adminPages   = ['override','volunteers','events','audit'];
-  const _ownerPages   = ['adminpanel'];
+  const _ownerPages   = ['adminpanel','iv-roster','iv-usercreation','iv-addons'];
   if(_ownerPages.includes(el.dataset.page) && !_isOwner) return;
   if(_adminPages.includes(el.dataset.page) && !_isAdmin) return;
   document.querySelectorAll('.page').forEach(p=>{ p.classList.remove('active'); p.classList.remove('ep-visible'); });
@@ -3691,6 +4049,7 @@ function nav(el){
   if(_pg.classList.contains('ep-only')) _pg.classList.add('ep-visible');
   el.classList.add('active');
   if(el.dataset.page === 'audit') renderAuditLogs();
+  if(el.dataset.page === 'myduties') mdInit();
   if(el.dataset.page === 'override'){
     const orDate = document.getElementById('or-edit-date');
     if(orDate && !orDate.value){ orDate.value = new Date().toISOString().split('T')[0]; }
@@ -3706,6 +4065,278 @@ function nav(el){
     renderApUserList();
   }
   if(window.innerWidth<=768) closeSidebar();
+}
+
+
+/* ═══════════════════════════════════
+   MY DUTIES
+═══════════════════════════════════ */
+
+// State
+let _mdCurrentName = '';
+let _mdDropSelected = -1;
+
+function mdInit(){
+  // Populate dropdown on page open with all unique volunteer names
+  // (search box cleared when navigating to fresh state)
+  // Nothing to auto-run — wait for user input
+}
+
+// Build the list of all names to search across:
+// volunteers list + anyone appearing in roster as _primary, _sup, _mph_primary, trainer/trainee
+function mdAllNames(){
+  const set = new Set();
+  vols.forEach(v=>{ if(v.name) set.add(v.name.trim()); });
+  Object.values(roster).forEach(ro=>{
+    if(ro._primary)      set.add(ro._primary.trim());
+    if(ro._sup)          set.add(ro._sup.trim());
+    if(ro._mph_primary)  set.add(ro._mph_primary.trim());
+    if(ro._mph_primary2) set.add(ro._mph_primary2.trim());
+  });
+  trainings.forEach(t=>{
+    if(t.trainer) set.add(t.trainer.trim());
+    if(t.trainee) set.add(t.trainee.trim());
+  });
+  return [...set].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+
+function mdOnInput(){
+  _mdDropSelected = -1;
+  const q = document.getElementById('mdSearch').value.trim().toLowerCase();
+  if(!q){ mdHideDrop(); return; }
+  const matches = mdAllNames().filter(n=>n.toLowerCase().includes(q));
+  const dd = document.getElementById('mdDropdown');
+  if(!matches.length){ dd.innerHTML='<div class="md-drop-item" style="color:var(--dm);cursor:default;">No matches found</div>'; dd.classList.add('open'); return; }
+  dd.innerHTML = matches.slice(0,10).map((n,i)=>
+    `<div class="md-drop-item" data-name="${esc(n)}" onmousedown="mdPickName('${esc(n)}')">${esc(n)}</div>`
+  ).join('');
+  dd.classList.add('open');
+}
+
+function mdOnKey(e){
+  const dd = document.getElementById('mdDropdown');
+  const items = dd.querySelectorAll('.md-drop-item[data-name]');
+  if(e.key==='ArrowDown'){ e.preventDefault(); _mdDropSelected=Math.min(_mdDropSelected+1,items.length-1); mdHighlightDrop(items); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); _mdDropSelected=Math.max(_mdDropSelected-1,0); mdHighlightDrop(items); }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    if(_mdDropSelected>=0 && items[_mdDropSelected]){ mdPickName(items[_mdDropSelected].dataset.name); }
+    else { mdSearch(); }
+  }
+  else if(e.key==='Escape'){ mdHideDrop(); }
+}
+
+function mdHighlightDrop(items){
+  items.forEach((it,i)=>it.classList.toggle('selected',i===_mdDropSelected));
+  if(items[_mdDropSelected]) items[_mdDropSelected].scrollIntoView({block:'nearest'});
+}
+
+function mdShowDrop(){
+  if(document.getElementById('mdSearch').value.trim()) mdOnInput();
+}
+
+function mdHideDrop(){
+  document.getElementById('mdDropdown').classList.remove('open');
+}
+
+function mdPickName(name){
+  document.getElementById('mdSearch').value = name;
+  mdHideDrop();
+  mdRunSearch(name);
+}
+
+function mdSearch(){
+  const q = document.getElementById('mdSearch').value.trim();
+  if(!q){ toast('Type a name to search','err'); return; }
+  // Try exact match first, then partial
+  const all = mdAllNames();
+  const exact = all.find(n=>n.toLowerCase()===q.toLowerCase());
+  const partial = all.filter(n=>n.toLowerCase().includes(q.toLowerCase()));
+  const name = exact || (partial.length===1 ? partial[0] : null);
+  if(!name){
+    if(partial.length>1){ toast('Multiple matches — please select from the list','err'); mdOnInput(); return; }
+    toast('Name not found in roster','err'); return;
+  }
+  document.getElementById('mdSearch').value = name;
+  mdHideDrop();
+  mdRunSearch(name);
+}
+
+function mdRunSearch(name){
+  _mdCurrentName = name;
+  const mo = MO[calMo]; const yr = calYr;
+
+  // Normalise names for comparison — trim, collapse spaces, lowercase
+  function normName(s){ return (s||'').trim().replace(/\s+/g,' ').toLowerCase(); }
+  const normTarget = normName(name);
+  function matchesName(s){ return normName(s) === normTarget; }
+
+  // Collect all duties for this person in calMo/calYr
+  const duties = [];
+
+  // Build date range for the current roster month
+  const dim = new Date(calYr, calMo+1, 0).getDate();
+
+  for(let d=1; d<=dim; d++){
+    const ds = `${calYr}-${String(calMo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ro = roster[ds] || {};
+    const tr = trainings.find(e=>e.date===ds);
+    const mj = majalisEvs.find(e=>e.date===ds);
+    const dt = new Date(ds+'T12:00');
+    const isFri = dt.getDay()===5;
+    const dow = dt.toLocaleDateString('en-NZ',{weekday:'long'});
+
+    // Is this person the trainer/trainee on this specific training day?
+    const isThisPersonTrainer  = tr && matchesName(tr.trainer);
+    const isThisPersonTrainee  = tr && matchesName(tr.trainee);
+
+    // JK Duty — use _primary (set by autoRoster or manual override)
+    // Only skip if this person IS the trainer on a training day
+    const jkP = ro._primary || getJKP(ro);
+    if(jkP && matchesName(jkP) && !isThisPersonTrainer){
+      duties.push({ds, d, dow, type:'jk', mj, ro});
+    }
+
+    // Supervisor (SUP tag)
+    if(ro._sup && matchesName(ro._sup)){
+      duties.push({ds, d, dow, type:'sup', mj, ro});
+    }
+
+    // MPH duty (Fridays auto, or any day if manually set)
+    if(!ro._mph_removed && (matchesName(ro._mph_primary) || matchesName(ro._mph_primary2))){
+      duties.push({ds, d, dow, type:'mph', mj, ro, isFri});
+    }
+
+    // Training — as trainer
+    if(isThisPersonTrainer){
+      duties.push({ds, d, dow, type:'tr-trainer', mj, ro, tr});
+    }
+    // Training — as trainee
+    if(isThisPersonTrainee){
+      duties.push({ds, d, dow, type:'tr-trainee', mj, ro, tr});
+    }
+  }
+
+  // Remove duplicates (same date+type)
+  const seen = new Set();
+  const unique = duties.filter(du=>{ const k=du.ds+du.type; if(seen.has(k)) return false; seen.add(k); return true; });
+  unique.sort((a,b)=>a.ds.localeCompare(b.ds));
+
+  // Summary counts
+  const cntJK  = unique.filter(du=>du.type==='jk').length;
+  const cntMPH = unique.filter(du=>du.type==='mph').length;
+  const cntSup = unique.filter(du=>du.type==='sup').length;
+  const cntTr  = unique.filter(du=>du.type==='tr-trainer'||du.type==='tr-trainee').length;
+
+  document.getElementById('mdCntJK').textContent  = cntJK;
+  document.getElementById('mdCntMPH').textContent = cntMPH;
+  document.getElementById('mdCntSup').textContent = cntSup;
+  document.getElementById('mdCntTr').textContent  = cntTr;
+  document.getElementById('mdVolName').textContent = name;
+  document.getElementById('mdMonthBadge').textContent = `${mo} ${yr}`;
+
+  // Render cards
+  const grid = document.getElementById('mdGrid');
+  const empty = document.getElementById('mdEmpty');
+  if(!unique.length){
+    grid.innerHTML='';
+    empty.style.display='block';
+    document.getElementById('mdEmptyName').textContent = name;
+    document.getElementById('mdEmptyMonth').textContent = `${mo} ${yr}`;
+  } else {
+    empty.style.display='none';
+    grid.innerHTML = unique.map(du=>mdDutyCard(du, mo, yr)).join('');
+  }
+
+  document.getElementById('mdResults').style.display='block';
+  document.getElementById('mdCapHdr').style.display='none'; // only show during screenshot
+}
+
+function mdDutyCard(du, mo, yr){
+  const {ds, d, dow, type, mj, ro, tr, isFri} = du;
+  const dayStr = String(d).padStart(2,'0');
+
+  // Type label config
+  const typeConf = {
+    'jk':         { label:'JK Duty',       cls:'jk',         icon:'🏛️' },
+    'mph':        { label:'MPH Duty',       cls:'mph',        icon:'🕌' },
+    'sup':        { label:'Supervision',    cls:'sup',        icon:'👁️' },
+    'tr-trainer': { label:'Training (Trainer)', cls:'tr-trainer', icon:'🎓' },
+    'tr-trainee': { label:'Training (Trainee)', cls:'tr-trainee', icon:'📘' },
+  };
+  const tc = typeConf[type] || {label:type, cls:'jk', icon:'📋'};
+
+  // Build detail lines
+  let details = '';
+  if(type==='jk'){
+    if(ro._sup) details += `<div class="md-card-detail">Supervised by <b>${esc(ro._sup)}</b></div>`;
+  }
+  if(type==='sup'){
+    const jkP = ro._primary || getJKP(ro);
+    const normC = (_mdCurrentName||'').trim().replace(/\s+/g,' ').toLowerCase();
+    if(jkP && (jkP||'').trim().replace(/\s+/g,' ').toLowerCase()!==normC) details += `<div class="md-card-detail">On duty with <b>${esc(jkP)}</b></div>`;
+  }
+  if(type==='mph'){
+    const normC2 = (_mdCurrentName||'').trim().replace(/\s+/g,' ').toLowerCase();
+    const isPrimary = (ro._mph_primary||'').trim().replace(/\s+/g,' ').toLowerCase()===normC2;
+    const partner = isPrimary ? ro._mph_primary2 : ro._mph_primary;
+    if(partner) details += `<div class="md-card-detail">With <b>${esc(partner)}</b></div>`;
+  }
+  if(type==='tr-trainer'){
+    details += `<div class="md-card-detail">Trainee: <b>${esc(tr.trainee)}</b></div>`;
+  }
+  if(type==='tr-trainee'){
+    details += `<div class="md-card-detail">Trainer: <b>${esc(tr.trainer)}</b></div>`;
+  }
+
+  // Majalis tag
+  const mjTag = mj ? `<div class="md-mj-tag">🕌 ${esc(mj.name)}</div>` : '';
+
+  return `<div class="md-duty-card type-${tc.cls}">
+    <div class="md-card-date">${dayStr}</div>
+    <div class="md-card-dow">${dow} · ${mo} ${yr}</div>
+    <div class="md-card-type ${tc.cls}">${tc.icon} ${tc.label}</div>
+    ${details}
+    ${mjTag}
+  </div>`;
+}
+
+function mdFd(ds){
+  const dt=new Date(ds+'T12:00');
+  return dt.toLocaleDateString('en-NZ',{weekday:'short',day:'numeric',month:'short'});
+}
+
+async function mdScreenshot(){
+  if(!_mdCurrentName){ toast('Search for a name first','err'); return; }
+  if(typeof html2canvas === 'undefined'){ toast('Screenshot library not loaded','err'); return; }
+
+  // Show capture header temporarily
+  const capHdr = document.getElementById('mdCapHdr');
+  const capTitle = document.getElementById('mdCapTitle');
+  const capSub   = document.getElementById('mdCapSub');
+  capTitle.textContent = `${_mdCurrentName.toUpperCase()} — MY DUTIES`;
+  capSub.textContent   = `${MO[calMo]} ${calYr}  ·  Auckland Jamatkhana · AV Roster`;
+  capHdr.style.display='block';
+
+  const el = document.getElementById('mdCapture');
+  try{
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#020B18',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+    const link = document.createElement('a');
+    link.download = `my-duties-${_mdCurrentName.replace(/\s+/g,'-')}-${MO[calMo]}-${calYr}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('✓ Screenshot saved!');
+  } catch(e){
+    console.error(e);
+    toast('Screenshot failed — try again','err');
+  } finally {
+    capHdr.style.display='none';
+  }
 }
 
 
@@ -3908,6 +4539,7 @@ function orMajalisSelChange(){
 }
 
 function orLoadFields(){
+  populateTrainingDropdowns();
   const ds = document.getElementById('or-edit-date').value;
   if(!ds) return;
 
